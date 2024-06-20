@@ -1734,7 +1734,7 @@ const onDatabaseError = async (error: string) => {
 
   if (error.includes(DBVersionFromFutureError.name)) {
     // If the DB version is too new, the user likely opened an older version of Signal,
-    // and they would almost never want to delete their data as a result, so we don't show
+    // and they would almost never want toloadPreferredSystemLocales delete their data as a result, so we don't show
     // that option
     messageDetail = i18n('icu:databaseError__startOldVersion');
   } else {

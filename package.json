@@ -14,11 +14,12 @@
   "browser": {
     "uuid": "uuid-browser"
   },
-  "main": "app/main.js",
+  "main": "app/main-bare.js",
   "scripts": {
     "postinstall": "npm run build:acknowledgments && patch-package && npm run electron:install-app-deps",
     "postuninstall": "npm run build:acknowledgments",
     "start": "electron .",
+    "start-bare": "electron .",
     "generate": "npm-run-all build-protobuf build:esbuild build:dns-fallback build:icu-types build:compact-locales sass get-expire-time copy-components",
     "build-release": "npm run build",
     "sign-release": "node ts/updater/generateSignature.js",

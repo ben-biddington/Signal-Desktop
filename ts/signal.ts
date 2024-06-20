@@ -51,6 +51,8 @@ import type {
   LinkPreviewWithHydratedData,
 } from './types/message/LinkPreviews';
 import type { StickerType, StickerWithHydratedData } from './types/Stickers';
+import { newPorts, Ports } from './ports/ports';
+import { DevNullClientInterface } from './ports/DevNullClientInterface';
 
 type EncryptedReader = (
   attachment: Partial<AddressableAttachmentType>
@@ -406,6 +408,9 @@ export const setup = (options: {
   logger: LoggerType;
   userDataPath: string;
 }): SignalCoreType => {
+  return mock(options);
+
+  // eslint-disable-next-line no-unreachable
   const { Attachments, getRegionCode, logger, userDataPath } = options;
 
   const Migrations = initializeMigrations({
@@ -460,6 +465,76 @@ export const setup = (options: {
     Migrations,
     OS,
     RemoteConfig,
+    Services,
+    State,
+    Types,
+  };
+};
+
+const mock = (options: {
+  Attachments: AttachmentsModuleType;
+  getRegionCode: () => string | undefined;
+  logger: LoggerType;
+  userDataPath: string;
+}): SignalCoreType => {
+  const ports: Ports = newPorts()
+    .with({ data: new DevNullClientInterface(true) })
+    .build();
+
+  const { Attachments, getRegionCode, logger, userDataPath } = options;
+
+  const Migrations = initializeMigrations({
+    getRegionCode,
+    Attachments,
+    Type: TypesAttachment,
+    VisualType: VisualAttachment,
+    logger,
+    userDataPath,
+  });
+
+  const Components = {
+    ConfirmationDialog,
+  };
+
+  const Roots = {
+    createApp,
+    createSafetyNumberViewer,
+  };
+
+  const Services = {
+    backups: backupsService,
+    calling,
+    initializeGroupCredentialFetcher,
+    initializeNetworkObserver,
+    initializeUpdateListener,
+
+    // Testing
+    storage,
+  };
+
+  const State = {
+    Roots,
+  };
+
+  const Types = {
+    Message: MessageType,
+
+    // Mostly for debugging
+    Address,
+    QualifiedAddress,
+  };
+
+  return {
+    Components,
+    Crypto,
+    Curve,
+    // Note: used in test/index.html, and not type-checked!
+    conversationControllerStart,
+    Data: ports.data ? ports.data : Data,
+    Groups,
+    Migrations,
+    OS,
+    RemoteConfig: ports.remoteConfig,
     Services,
     State,
     Types,
