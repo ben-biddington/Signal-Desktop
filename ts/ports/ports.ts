@@ -4,6 +4,8 @@ import { DevNullInitializeGroupCredentialFetcher } from './DevNullInitializeGrou
 import type { RemoteConfig } from './remote-config';
 import type { TextSecureType } from '../textsecure';
 import { create } from './DevNullTextSecure';
+import type { IConversationController } from './IConversationController';
+import { DevNullConversationController } from './DevNullConversationController';
 
 export type InitializeGroupCredentialFetcher = () => Promise<void>;
 
@@ -12,6 +14,7 @@ export type Ports = {
   remoteConfig: RemoteConfig;
   data?: ClientInterface;
   textsecure?: TextSecureType;
+  conversationController: IConversationController;
 };
 
 export class PortsBuilder {
@@ -41,4 +44,5 @@ export const devNull: () => Ports = () => ({
   initializeGroupCredentialFetcher: DevNullInitializeGroupCredentialFetcher,
   remoteConfig: new DevNullRemoteConfig(),
   textsecure: create(),
+  conversationController: new DevNullConversationController(),
 });

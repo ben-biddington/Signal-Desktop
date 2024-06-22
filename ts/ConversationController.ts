@@ -38,6 +38,7 @@ import { getTitleNoDefault } from './util/getTitle';
 import * as StorageService from './services/storage';
 import type { ConversationPropsForUnreadStats } from './util/countUnreadStats';
 import { countAllConversationsUnreadStats } from './util/countUnreadStats';
+import { IConversationController } from './ports/IConversationController';
 
 type ConvoMatchType =
   | {
@@ -143,7 +144,7 @@ export function start(): void {
   window.getConversations = () => conversations;
 }
 
-export class ConversationController {
+export class ConversationController implements IConversationController {
   private _initialFetchComplete = false;
 
   private _initialPromise: undefined | Promise<void>;

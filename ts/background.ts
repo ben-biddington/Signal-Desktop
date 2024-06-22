@@ -234,7 +234,7 @@ export async function cleanupSessionResets(): Promise<void> {
 
 export async function startApp(): Promise<void> {
   window.textsecure.storage.protocol = new window.SignalProtocolStore();
-
+  await window.Signal.init();
   await window.textsecure.storage.init();
 
   if (window.initialTheme === ThemeType.light) {
@@ -2082,13 +2082,6 @@ export async function startApp(): Promise<void> {
 
     setBatchingStrategy(false);
     StartupQueue.flush();
-
-    log.info(
-      'onEmpty flushAttachmentDownloadQueue storage.initialised',
-      // @ts-expect-error "ABC"
-      storage.initialised,
-      storage.user.getAci()
-    );
 
     await flushAttachmentDownloadQueue();
 

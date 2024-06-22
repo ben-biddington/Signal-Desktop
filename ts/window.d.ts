@@ -55,6 +55,7 @@ import type { RetryPlaceholders } from './util/retryPlaceholders';
 import type { PropsPreloadType as PreferencesPropsType } from './components/Preferences';
 import type { WindowsNotificationData } from './services/notifications';
 import { IStorage } from './ports/IStorage';
+import { IConversationController } from './ports/IConversationController';
 
 export { Long } from 'long';
 
@@ -136,6 +137,7 @@ type SettingsWindowPropsType = {
 };
 
 export type SignalCoreType = {
+  init: () => Promise<void>;
   AboutWindowProps?: AboutWindowPropsType;
   Crypto: typeof Crypto;
   Curve: typeof Curve;
@@ -236,7 +238,7 @@ declare global {
     // Backbone
     Backbone: typeof Backbone;
 
-    ConversationController: ConversationController;
+    ConversationController: IConversationController;
     Events: IPCEventsType;
     FontFace: typeof FontFace;
     MessageCache: MessageCache;

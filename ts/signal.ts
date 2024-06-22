@@ -53,6 +53,7 @@ import type {
 import type { StickerType, StickerWithHydratedData } from './types/Stickers';
 import { newPorts, Ports } from './ports/ports';
 import { DevNullClientInterface } from './ports/DevNullClientInterface';
+import { markEverDone } from './util/registration';
 
 type EncryptedReader = (
   attachment: Partial<AddressableAttachmentType>
@@ -468,6 +469,7 @@ export const setup = (options: {
     Services,
     State,
     Types,
+    init: () => Promise.resolve(),
   };
 };
 
@@ -538,5 +540,14 @@ export const mock = (options: {
     Services,
     State,
     Types,
+    init: () => markEverDone(),
   };
 };
+
+// [!] Copied from `ts/ConversationController.ts`
+export function startConversationsController(ports: Ports): void {
+  const conversations = new window.Whisper.ConversationCollection();
+
+  window.ConversationController = ports.conversationController;
+  window.getConversations = () => conversations;
+}
