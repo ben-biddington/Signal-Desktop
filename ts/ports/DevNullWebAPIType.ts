@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { Response } from 'node-fetch';
@@ -6,7 +7,7 @@ import type {
   LinkPreviewMetadata,
   LinkPreviewImage,
 } from '../linkPreviews/linkPreviewFetch';
-import type { SignalService } from '../protobuf';
+import type { SignalService, SignalService as Proto } from '../protobuf';
 import type { CDSResponseType } from '../textsecure/cds/Types';
 import type {
   IRequestHandler,
@@ -70,9 +71,12 @@ import type {
   UploadKeysType,
   VerifyServiceIdRequestType,
   VerifyServiceIdResponseType,
+  WebAPIConnectOptionsType,
+  WebAPIConnectType,
   WebAPIType,
   WhoamiResultType,
 } from '../textsecure/WebAPI';
+import { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
 import type { IWebSocketResource } from '../textsecure/WebsocketResources';
 import type { BackupPresentationHeadersType } from '../types/backups';
 import type { ServiceIdString, ServiceIdKind } from '../types/ServiceId';
@@ -83,7 +87,12 @@ import type { FetchFunctionType } from '../util/uploads/tusProtocol';
 const resolve = <T>(result: T) => Promise.resolve(result);
 const resolveEmpty = () => Promise.resolve(new Uint8Array(0));
 
-export class DevNullWebAPIType implements WebAPIType {
+export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
+  connect = (options: WebAPIConnectOptionsType): WebAPIType => {
+    this.info('connect', options);
+    return new DevNullWebAPIType();
+  };
+
   startRegistration = (): void => {};
   finishRegistration = (): void => {};
   cancelInflightRequests = (): void => {};
@@ -423,7 +432,8 @@ export class DevNullWebAPIType implements WebAPIType {
   ): Promise<BackupListMediaResponseType> =>
     resolve({} as BackupListMediaResponseType);
 
-  backupDeleteMedia = (options: BackupDeleteMediaOptionsType) => Promise<void>;
+  backupDeleteMedia = (options: BackupDeleteMediaOptionsType): Promise<void> =>
+    Promise.resolve();
 
   callLinkCreateAuth = (
     requestBase64: string
@@ -450,17 +460,46 @@ export class DevNullWebAPIType implements WebAPIType {
   sendChallengeResponse = (challengeResponse: ChallengeType): Promise<void> =>
     Promise.resolve();
 
-  getConfig = (): Promise<RemoteConfigResponseType> =>
-    resolve({} as RemoteConfigResponseType);
+  getConfig = (): Promise<RemoteConfigResponseType> => {
+    this.info('[getConfig]');
 
-  authenticate = (credentials: WebAPICredentials): Promise<void> =>
-    Promise.resolve();
+    const value: RemoteConfigResponseType = {
+      config: [
+        {
+          name: 'test',
+          enabled: true,
+        },
+      ],
+      serverEpochTime: new Date().getTime(),
+    };
+
+    return resolve(value);
+  };
+
+  authenticate = (credentials: WebAPICredentials): Promise<void> => {
+    this.info('authenticate', credentials);
+    return Promise.resolve();
+  };
 
   logout = (): Promise<void> => Promise.resolve();
 
   getSocketStatus = (): SocketStatus => SocketStatus.OPEN;
 
-  registerRequestHandler = (handler: IRequestHandler): void => {};
+  registerRequestHandler = (handler: IRequestHandler): void => {
+    this.info('registerRequestHandler', handler);
+
+    const request: Proto.IWebSocketRequestMessage = {
+      id: 1,
+      verb: 'PUT',
+      path: '/v1/messages',
+    };
+
+    handler.handleRequest(
+      new IncomingWebSocketRequest(request, () => {
+        this.info('sending bytes');
+      })
+    );
+  };
 
   unregisterRequestHandler = (handler: IRequestHandler): void => {};
 
@@ -475,4 +514,11 @@ export class DevNullWebAPIType implements WebAPIType {
   onNavigatorOffline = (): Promise<void> => Promise.resolve();
   onRemoteExpiration = (): Promise<void> => Promise.resolve();
   reconnect = (): Promise<void> => Promise.resolve();
+
+  private info = (...messages: Array<unknown>) =>
+    console.log(
+      '[DevNullWebAPIType]',
+      ...messages,
+      new Error('not an error').stack
+    );
 }
