@@ -60,6 +60,8 @@ export class DevNullMessages {
         body: m.body,
         bodyRanges: [],
         snippet: m.body?.substring(0, 5) || '',
+        contact: m.contact,
+        message: m.message,
       }))
     );
   };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-console */
 
 import type { EventHandler } from '../textsecure/EventTarget';
@@ -22,15 +23,17 @@ import type {
   ViewOnceOpenSyncEvent,
   MessageRequestResponseEvent,
   FetchLatestEvent,
-  KeysEvent,
   StickerPackEvent,
   ReadSyncEvent,
   ViewSyncEvent,
-  ContactSyncEvent,
   StoryRecipientUpdateEvent,
   CallLogEventSyncEvent,
   CallLinkUpdateSyncEvent,
   DeleteForMeSyncEvent,
+} from '../textsecure/messageReceiverEvents';
+import {
+  ContactSyncEvent,
+  KeysEvent,
 } from '../textsecure/messageReceiverEvents';
 import type { IRequestHandler } from '../textsecure/Types';
 import type { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
@@ -43,6 +46,74 @@ export class EventTargetMessageReceiver
   handleRequest(request: IncomingWebSocketRequest): void {
     console.log('[DevNullMessageReceiver]', { request });
   }
+
+  constructor() {
+    super();
+
+    // Copied from `ts/textsecure/MessageReceiver.ts`
+    window.Whisper.events.on('app-ready-for-processing', () => {
+      this.dispatchEvent(
+        new KeysEvent(
+          {
+            masterKey: new Uint8Array(0),
+            storageServiceKey: new Uint8Array(0),
+          },
+          () => {}
+        )
+      );
+
+      // This is how we populate contacts, see `mock` in `ts/signal.ts`.
+      this.dispatchEvent(
+        new ContactSyncEvent(
+          [
+            {
+              name: 'Ben',
+              aci: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
+              number: '+64220170045',
+            },
+            {
+              name: 'Derwood',
+              aci: 'f90f61cd-ec82-478e-a9da-a10c2cd75b8d',
+              number: '+64220170046',
+            },
+            {
+              name: 'Sally',
+              aci: '3f8b7839-d49a-4e63-8444-25508ea9418f',
+              number: '+64220170047',
+            },
+            {
+              name: 'Gorflaxus',
+              aci: 'dcd936c5-eeda-48c7-bea1-0a84cf33e977',
+              number: '+64220170048',
+            },
+          ],
+          true,
+          new Date().getTime(),
+          new Date().getTime()
+        )
+      );
+    });
+  }
+
+  // region Taken from `MessageReceiver`
+
+  public stopProcessing(): void {}
+
+  public getAndResetProcessedCount(): number {
+    return 0;
+  }
+
+  public reset(): void {}
+
+  public hasEmptied(): boolean {
+    return false;
+  }
+
+  public async drain(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  // endregion Taken from `MessageReceiver`
 
   public override addEventListener(
     name: 'empty',

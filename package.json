@@ -14,7 +14,7 @@
   "browser": {
     "uuid": "uuid-browser"
   },
-  "main": "app/main-bare.js",
+  "main": "app/main.js",
   "scripts": {
     "postinstall": "npm run build:acknowledgments && patch-package && npm run electron:install-app-deps",
     "postuninstall": "npm run build:acknowledgments",
