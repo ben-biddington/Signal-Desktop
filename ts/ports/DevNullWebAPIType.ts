@@ -7,7 +7,7 @@ import type {
   LinkPreviewMetadata,
   LinkPreviewImage,
 } from '../linkPreviews/linkPreviewFetch';
-import type { SignalService, SignalService as Proto } from '../protobuf';
+import type { SignalService } from '../protobuf';
 import type { CDSResponseType } from '../textsecure/cds/Types';
 import type {
   IRequestHandler,
@@ -76,10 +76,13 @@ import type {
   WebAPIType,
   WhoamiResultType,
 } from '../textsecure/WebAPI';
-import { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
 import type { IWebSocketResource } from '../textsecure/WebsocketResources';
 import type { BackupPresentationHeadersType } from '../types/backups';
-import type { ServiceIdString, ServiceIdKind } from '../types/ServiceId';
+import type {
+  ServiceIdString,
+  ServiceIdKind,
+  UntaggedPniString,
+} from '../types/ServiceId';
 import { SocketStatus } from '../types/SocketStatus';
 import type { VerificationTransport } from '../types/VerificationTransport';
 import type { FetchFunctionType } from '../util/uploads/tusProtocol';
@@ -87,10 +90,18 @@ import type { FetchFunctionType } from '../util/uploads/tusProtocol';
 const resolve = <T>(result: T) => Promise.resolve(result);
 const resolveEmpty = () => Promise.resolve(new Uint8Array(0));
 
+export type Options = {
+  pni: string;
+};
+
 export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
+  private readonly opts: Options;
+  constructor(opts: Options) {
+    this.opts = opts;
+  }
   connect = (options: WebAPIConnectOptionsType): WebAPIType => {
     this.info('connect', options);
-    return new DevNullWebAPIType();
+    return new DevNullWebAPIType({ pni: 'PNI:UNKNOWN' });
   };
 
   startRegistration = (): void => {};
@@ -158,8 +169,17 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
 
   getGroupCredentials = (
     options: GetGroupCredentialsOptionsType
-  ): Promise<GetGroupCredentialsResultType> =>
-    resolve({} as GetGroupCredentialsResultType);
+  ): Promise<GetGroupCredentialsResultType> => {
+    const value: GetGroupCredentialsResultType = {
+      pni: this.opts.pni as UntaggedPniString,
+      callLinkAuthCredentials: [],
+      credentials: [],
+    };
+
+    this.info('getGroupCredentials', { value });
+
+    return resolve(value);
+  };
 
   getExternalGroupCredential = (
     options: GroupCredentialsType
@@ -487,18 +507,6 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
 
   registerRequestHandler = (handler: IRequestHandler): void => {
     this.info('registerRequestHandler', handler);
-
-    const request: Proto.IWebSocketRequestMessage = {
-      id: 1,
-      verb: 'PUT',
-      path: '/v1/messages',
-    };
-
-    handler.handleRequest(
-      new IncomingWebSocketRequest(request, () => {
-        this.info('sending bytes');
-      })
-    );
   };
 
   unregisterRequestHandler = (handler: IRequestHandler): void => {};
@@ -507,10 +515,9 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
 
   checkSockets = (): void => {};
 
-  isOnline = (): boolean | undefined => undefined;
+  isOnline = (): boolean | undefined => true;
 
   onNavigatorOnline = (): Promise<void> => Promise.resolve();
-
   onNavigatorOffline = (): Promise<void> => Promise.resolve();
   onRemoteExpiration = (): Promise<void> => Promise.resolve();
   reconnect = (): Promise<void> => Promise.resolve();

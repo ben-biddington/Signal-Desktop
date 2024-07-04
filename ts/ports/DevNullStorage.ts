@@ -1,8 +1,10 @@
+/* eslint-disable max-len */
 import { SignalProtocolStore } from '../SignalProtocolStore';
 import { Blocked } from '../textsecure/storage/Blocked';
 import { User } from '../textsecure/storage/User';
 import { generateAci, generatePni } from '../types/ServiceId';
 import type { StorageAccessType } from '../types/Storage';
+import { isDone, markDone } from '../util/registration';
 import type { IStorage } from './IStorage';
 
 export class DevNullStorage implements IStorage {
@@ -18,16 +20,6 @@ export class DevNullStorage implements IStorage {
   private readyCallbacks: Array<() => void> = [];
 
   get user(): User {
-    if (!this._user.getAci()) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[DevNullStorage.user] initialised: <${
-          this.initialised
-        }>, user <aci: ${this._user.getAci()}> getter called by ${
-          new Error().stack
-        }`
-      );
-    }
     return this._user;
   }
 
@@ -42,22 +34,23 @@ export class DevNullStorage implements IStorage {
   constructor() {
     this._user = new User(this);
     this.blocked = new Blocked(this);
-    // [!] Not assigning `window.storage` like `Storage` does (ts/textsecure/Storage.ts)
+    // [!] **Not** assigning `window.storage` like `Storage` does (ts/textsecure/Storage.ts)
   }
 
   public init = async (): Promise<void> => {
-    await this.user.setCredentials({
-      aci: generateAci(),
-      pni: generatePni(),
-      number: '',
-      deviceId: 0,
-      password: '',
-    });
+    await Promise.all([
+      this.user.setCredentials({
+        // See: ts/util/registration.ts
+        aci: generateAci(),
+        pni: generatePni(),
+        number: '',
+        deviceId: 0,
+        password: '',
+      }),
+      markDone(),
+    ]);
 
     this.initialised = true;
-
-    // eslint-disable-next-line no-console
-    console.log('init', this.user.getCheckedAci());
   };
 
   public fetch = (): Promise<void> => {
@@ -88,8 +81,6 @@ export class DevNullStorage implements IStorage {
   //
 
   public onready(callback: () => void): void {
-    // eslint-disable-next-line no-console
-    console.log('DevNullStorage.onready', new Error().stack);
     if (this.ready) {
       callback();
     } else {
@@ -97,31 +88,29 @@ export class DevNullStorage implements IStorage {
     }
   }
 
-  // Same as ts/textsecure/Storage.ts
+  // Copied from ts/textsecure/Storage.ts
   public get<K extends keyof StorageAccessType>(
     key: K,
     defaultValue?: StorageAccessType[K]
   ): StorageAccessType[K] | undefined {
     const item = this.items[key];
-    if (item === undefined) {
-      return defaultValue;
-    }
 
-    return item;
+    return item === undefined ? defaultValue : item;
   }
 
-  // Same as ts/textsecure/Storage.ts
+  // Copied from ts/textsecure/Storage.ts
   public async put<K extends keyof StorageAccessType>(
     key: K,
     value: StorageAccessType[K]
   ): Promise<void> {
     this.items[key] = value;
+
     await window.Signal.Data.createOrUpdateItem({ id: key, value });
 
     window.reduxActions?.items.putItemExternal(key, value);
   }
 
-  // Same as ts/textsecure/Storage.ts
+  // Copied from ts/textsecure/Storage.ts
   public async remove<K extends keyof StorageAccessType>(
     key: K
   ): Promise<void> {

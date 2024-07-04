@@ -4,7 +4,6 @@
 import type { EventHandler } from '../textsecure/EventTarget';
 import type {
   CallEventSyncEvent,
-  EmptyEvent,
   EnvelopeQueuedEvent,
   EnvelopeUnsealedEvent,
   ProgressEvent,
@@ -31,10 +30,8 @@ import type {
   CallLinkUpdateSyncEvent,
   DeleteForMeSyncEvent,
 } from '../textsecure/messageReceiverEvents';
-import {
-  ContactSyncEvent,
-  KeysEvent,
-} from '../textsecure/messageReceiverEvents';
+import { EmptyEvent } from '../textsecure/messageReceiverEvents';
+import * as messageReceiverEvents from '../textsecure/messageReceiverEvents';
 import type { IRequestHandler } from '../textsecure/Types';
 import type { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
 import EventTarget from '../textsecure/EventTarget';
@@ -53,7 +50,7 @@ export class EventTargetMessageReceiver
     // Copied from `ts/textsecure/MessageReceiver.ts`
     window.Whisper.events.on('app-ready-for-processing', () => {
       this.dispatchEvent(
-        new KeysEvent(
+        new messageReceiverEvents.KeysEvent(
           {
             masterKey: new Uint8Array(0),
             storageServiceKey: new Uint8Array(0),
@@ -64,7 +61,7 @@ export class EventTargetMessageReceiver
 
       // This is how we populate contacts, see `mock` in `ts/signal.ts`.
       this.dispatchEvent(
-        new ContactSyncEvent(
+        new messageReceiverEvents.ContactSyncEvent(
           [
             {
               name: 'Ben',
@@ -92,6 +89,8 @@ export class EventTargetMessageReceiver
           new Date().getTime()
         )
       );
+
+      this.dispatchEvent(new EmptyEvent());
     });
   }
 
@@ -202,7 +201,7 @@ export class EventTargetMessageReceiver
 
   public override addEventListener(
     name: 'keys',
-    handler: (ev: KeysEvent) => void
+    handler: (ev: messageReceiverEvents.KeysEvent) => void
   ): void;
 
   public override addEventListener(
@@ -222,7 +221,7 @@ export class EventTargetMessageReceiver
 
   public override addEventListener(
     name: 'contactSync',
-    handler: (ev: ContactSyncEvent) => void
+    handler: (ev: messageReceiverEvents.ContactSyncEvent) => void
   ): void;
 
   public override addEventListener(
