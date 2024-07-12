@@ -35,6 +35,10 @@ export class DevNullMessages {
     this.messages = messages;
   }
 
+  public add = (m: MessageType): void => {
+    this.messages.push(m);
+  };
+
   getMessageById = (id: string): Promise<MessageType | undefined> => {
     const result = this.messages.find(it => it.id === id);
     console.log('DevNullMessages', { result });

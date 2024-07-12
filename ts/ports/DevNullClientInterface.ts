@@ -12,13 +12,12 @@ import type {
   ConversationType,
 } from '../sql/Interface';
 import type { AttachmentDownloadJobType } from '../types/AttachmentDownload';
-import type { ServiceIdString } from '../types/ServiceId';
+import type { AciString, ServiceIdString } from '../types/ServiceId';
 import type { DevNullMessages } from './DevNullMessages';
+import type { StoredJob } from '../jobs/types';
 
 export class DevNullClientInterface implements ClientInterface {
-  private messages: DevNullMessages;
-
-  constructor(messages: DevNullMessages) {
+  constructor(private readonly messages: DevNullMessages) {
     this.messages = messages;
   }
 
@@ -102,7 +101,20 @@ export class DevNullClientInterface implements ClientInterface {
   getGroupSendCombinedEndorsementExpiration = this.zero;
   getMessageCount = this.zero;
   getStoryCount = this.zero;
-  saveMessage = () => Promise.resolve('');
+  saveMessage = (
+    data: MessageType,
+    options: {
+      jobToInsert?: StoredJob;
+      forceSave?: boolean;
+      ourAci: AciString;
+    }
+  ) => {
+    console.log('[DevNullClientInterface]', 'saveMessage', { data, options });
+
+    this.messages.add(data);
+
+    return Promise.resolve('');
+  };
   saveMessages = this.empty;
   removeMessage = this.void;
   removeMessages = this.void;

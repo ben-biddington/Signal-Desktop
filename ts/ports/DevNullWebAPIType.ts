@@ -95,10 +95,8 @@ export type Options = {
 };
 
 export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
-  private readonly opts: Options;
-  constructor(opts: Options) {
-    this.opts = opts;
-  }
+  constructor(private readonly opts: Options) {}
+
   connect = (options: WebAPIConnectOptionsType): WebAPIType => {
     this.info('connect', options);
     return new DevNullWebAPIType({ pni: 'PNI:UNKNOWN' });
@@ -240,10 +238,16 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
     handler: IRequestHandler
   ): Promise<IWebSocketResource> => resolve({} as IWebSocketResource);
 
+  // Required by `requestSenderCertificate`
   getSenderCertificate = (
     withUuid?: boolean
-  ): Promise<GetSenderCertificateResultType> =>
-    resolve({} as GetSenderCertificateResultType);
+  ): Promise<GetSenderCertificateResultType> => {
+    const result: GetSenderCertificateResultType = {
+      certificate: '',
+    };
+
+    return Promise.resolve(result);
+  };
 
   getSticker = (packId: string, stickerId: number): Promise<Uint8Array> =>
     resolveEmpty();

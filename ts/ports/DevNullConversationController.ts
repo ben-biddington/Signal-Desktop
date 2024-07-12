@@ -529,6 +529,7 @@ function applyChangeToConversation(
 
 // [!] Copied from `start` in `ts/ConversationController.ts`
 // We need this here because we MUST use `window.Whisper.ConversationCollection`
+// `window.Whisper.ConversationCollection` is assigned in `ts/models/conversations.ts`
 export const start = (
   conversationController: DevNullConversationController
 ) => {
