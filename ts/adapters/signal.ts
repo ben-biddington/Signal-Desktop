@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable max-len */
 // Copyright 2018 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import moment from 'moment';
+import getGuid from 'uuid/v4';
 import * as Crypto from '../Crypto';
 import * as Curve from '../Curve';
 import Data from '../sql/Client';
@@ -31,7 +32,6 @@ import {
   DevNullConversationController,
 } from '../ports/DevNullConversationController';
 import { backupsService } from '../services/backups';
-import { calling } from '../services/calling';
 import { initializeNetworkObserver } from '../services/networkObserver';
 import { initializeUpdateListener } from '../services/updateListener';
 import { createSafetyNumberViewer } from '../state/roots/createSafetyNumberViewer';
@@ -39,6 +39,8 @@ import OS from '../util/os/osMain';
 import { markDone } from '../util/registration';
 import * as storage from '../services/storage';
 import { DevNullInitializeGroupCredentialFetcher } from '../ports/DevNullInitializeGroupCredentialFetcher';
+import { DevNullCalling } from '../ports/DevNullCalling';
+import { unixTimestamp } from './date-time';
 
 // Duplicated from `ts/signal.ts`
 type StringGetterType = (basePath: string) => string;
@@ -161,20 +163,25 @@ export const setup = (options: {
       (anonymous) @ background.html:119
   */
 
+  const yesterday = unixTimestamp(moment().subtract(3, 'days').toDate());
+
   const conversationController = new DevNullConversationController(
     {
       id: '78482982-a260-4d0a-a55a-90f8e2a01f26',
+      active_at: yesterday,
       type: 'group',
       ...createNewGroup(),
       version: 0,
       addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
       description: 'Conversation 1',
       members: ['dc4098ad-dd0f-4250-a05b-796716d2b838'],
-      name: 'Conversation 1',
+      name: 'Name',
       serviceId: 'PNI:c9023f3a-bbca-4242-8306-475677c0a5ca' as PniString,
+      lastMessage: 'A B C',
     },
     {
       id: 'de982c0a-cf3c-433e-b25c-e3315bd290e6',
+      active_at: yesterday,
       type: 'group',
       ...createNewGroup(),
       version: 0,
@@ -187,9 +194,12 @@ export const setup = (options: {
       ],
       name: 'Conversation 2',
       serviceId: 'PNI:9b58a16e-699a-4d62-ad95-24ec0c5985ec' as PniString,
+      lastMessage: 'D E F',
     },
     {
       id: '5ab1a933-9d2d-4a9a-887f-9f696398931b',
+      active_at: yesterday,
+      isPinned: true,
       type: 'group',
       ...createNewGroup(),
       version: 0,
@@ -202,6 +212,21 @@ export const setup = (options: {
       ],
       name: 'Conversation 3',
       serviceId: 'PNI:7d83b820-3104-46d2-96d9-bf6e88c860e4' as PniString,
+      lastMessage: 'G H I',
+    },
+    {
+      id: getGuid(),
+      active_at: yesterday,
+      isArchived: true,
+      type: 'group',
+      ...createNewGroup(),
+      version: 0,
+      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
+      description: 'Archived 1',
+      members: ['dc4098ad-dd0f-4250-a05b-796716d2b838'],
+      name: 'Archived 1',
+      serviceId: 'PNI:c9023f3a-bbca-4242-8306-475677c0a5ca' as PniString,
+      lastMessage: 'XXX',
     }
   );
 
@@ -212,25 +237,36 @@ export const setup = (options: {
       createMessage({
         id: 'msg-1',
         conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        message: 'A B C',
+        body: 'A B C',
+        // contact: [
+        //   {
+        //     name: { displayName: 'Derwood' },
+        //     number: [{ value: '+64220170046', type: ContactFormType.MOBILE }],
+        //     serviceId: 'PNI:f90f61cd-ec82-478e-a9da-a10c2cd75b8d' as PniString,
+        //   },
+        // ],
       }),
       createMessage({
         id: 'msg-2',
         conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        message: 'D E F',
+        body: 'D E F',
       }),
       createMessage({
         id: 'msg-3',
         conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        message: 'G H I',
-        contact: [
-          {
-            serviceId: 'PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString,
-          },
-          {
-            serviceId: 'PNI:f90f61cd-ec82-478e-a9da-a10c2cd75b8d' as PniString,
-          },
-        ],
+        body: 'G H I',
+        // contact: [
+        //   {
+        //     name: { displayName: 'Ben' },
+        //     number: [{ value: '+64220170045', type: ContactFormType.MOBILE }],
+        //     serviceId: 'PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString,
+        //   },
+        //   {
+        //     name: { displayName: 'Derwood' },
+        //     number: [{ value: '+64220170046', type: ContactFormType.MOBILE }],
+        //     serviceId: 'PNI:f90f61cd-ec82-478e-a9da-a10c2cd75b8d' as PniString,
+        //   },
+        // ],
       })
     )
   );
@@ -264,7 +300,7 @@ export const setup = (options: {
 
   const Services = {
     backups: backupsService,
-    calling,
+    calling: new DevNullCalling(),
     initializeGroupCredentialFetcher: DevNullInitializeGroupCredentialFetcher,
     initializeNetworkObserver,
     initializeUpdateListener,

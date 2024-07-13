@@ -10,6 +10,7 @@ import type {
   PageMessagesResultType,
   MessageType,
   ConversationType,
+  AdjacentMessagesByConversationOptionsType,
 } from '../sql/Interface';
 import type { AttachmentDownloadJobType } from '../types/AttachmentDownload';
 import type { AciString, ServiceIdString } from '../types/ServiceId';
@@ -299,8 +300,14 @@ export class DevNullClientInterface implements ClientInterface {
   };
 
   getRecentStoryReplies = this.empty;
-  getOlderMessagesByConversation = this.empty;
-  getNewerMessagesByConversation = this.empty;
+
+  getOlderMessagesByConversation = (
+    options: AdjacentMessagesByConversationOptionsType
+  ) => this.messages.findMessagesForConversation(options.conversationId);
+  getNewerMessagesByConversation = (
+    options: AdjacentMessagesByConversationOptionsType
+  ) => this.messages.findMessagesForConversation(options.conversationId);
+
   getConversationRangeCenteredOnMessage = () =>
     Promise.resolve({
       older: [],

@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-console */
+import { unixTimestamp, now } from '../adapters/date-time';
+import type { MessageAttributesType } from '../model-types';
 import type {
   ClientSearchResultMessageType,
   MessageType,
@@ -7,15 +7,14 @@ import type {
 import type { ServiceIdString } from '../types/ServiceId';
 
 const emptyMessage = (): MessageType => {
-  const now = new Date().getDate();
-
+  const _now = unixTimestamp(now());
   return {
     id: '',
-    sent_at: now,
+    sent_at: _now,
     type: 'incoming',
     conversationId: '',
-    timestamp: now,
-    received_at: now,
+    timestamp: _now,
+    received_at: _now,
     bodyRanges: [],
     body: '',
   };
@@ -40,10 +39,15 @@ export class DevNullMessages {
   };
 
   getMessageById = (id: string): Promise<MessageType | undefined> => {
-    const result = this.messages.find(it => it.id === id);
-    console.log('DevNullMessages', { result });
-    return Promise.resolve(result);
+    return Promise.resolve(this.messages.find(it => it.id === id));
   };
+
+  findMessagesForConversation = (
+    conversationId: string
+  ): Promise<Array<MessageType>> =>
+    Promise.resolve(
+      this.messages.filter(it => it.conversationId === conversationId)
+    );
 
   searchMessages = (_: {
     query: string;
@@ -51,22 +55,25 @@ export class DevNullMessages {
     options?: { limit?: number };
     contactServiceIdsMatchingQuery?: Array<ServiceIdString>;
   }): Promise<Array<ClientSearchResultMessageType>> => {
-    return Promise.resolve(
-      this.messages.map(m => ({
-        id: m.id,
-        sent_at: m.sent_at,
-        conversationId: m.conversationId,
-        timestamp: m.timestamp,
-        received_at: m.received_at,
-        type: m.type,
-        json: JSON.stringify(m.body),
-        text: m.body,
-        body: m.body,
-        bodyRanges: [],
-        snippet: m.body?.substring(0, 5) || '',
-        contact: m.contact,
-        message: m.message,
-      }))
-    );
+    return Promise.resolve(this.map(this.messages));
   };
+
+  private map = (
+    messages: Array<MessageAttributesType>
+  ): Array<ClientSearchResultMessageType> =>
+    messages.map(m => ({
+      id: m.id,
+      sent_at: m.sent_at,
+      conversationId: m.conversationId,
+      timestamp: m.timestamp,
+      received_at: m.received_at,
+      type: m.type,
+      json: JSON.stringify(m.body),
+      text: m.body,
+      body: m.body,
+      bodyRanges: [],
+      snippet: m.body?.substring(0, 5) || '',
+      contact: m.contact,
+      message: m.message,
+    }));
 }

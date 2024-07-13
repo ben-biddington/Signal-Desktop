@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-console */
 
+import moment from 'moment';
+import { v4 as getGuid } from 'uuid';
 import type { EventHandler } from '../textsecure/EventTarget';
 import type {
   CallEventSyncEvent,
@@ -35,6 +37,9 @@ import * as messageReceiverEvents from '../textsecure/messageReceiverEvents';
 import type { IRequestHandler } from '../textsecure/Types';
 import type { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
 import EventTarget from '../textsecure/EventTarget';
+import { SignalService as Proto } from '../protobuf';
+import { generateAci, type ServiceIdString } from '../types/ServiceId';
+import { now, unixTimestamp } from '../adapters/date-time';
 
 export class EventTargetMessageReceiver
   extends EventTarget
@@ -85,12 +90,52 @@ export class EventTargetMessageReceiver
             },
           ],
           true,
-          new Date().getTime(),
-          new Date().getTime()
+          unixTimestamp(now()),
+          unixTimestamp(now())
         )
       );
 
-      this.dispatchEvent(new EmptyEvent());
+      // Show the 'Loading messages from 9 days ago.' message
+      const receivedDate: Date = moment().subtract(3, 'days').toDate();
+
+      const timestamp = unixTimestamp(receivedDate);
+
+      this.dispatchEvent(
+        new messageReceiverEvents.EnvelopeUnsealedEvent({
+          id: getGuid(),
+          receivedAtCounter: 0,
+          receivedAtDate: receivedDate.getTime(),
+          messageAgeSec: moment().diff(receivedDate),
+          sourceServiceId: generateAci(),
+          destinationServiceId: '' as ServiceIdString,
+          timestamp,
+          serverGuid: getGuid(),
+          serverTimestamp: timestamp,
+          type: Proto.Envelope.Type.UNKNOWN,
+        })
+      );
+
+      this.dispatchEvent(
+        new messageReceiverEvents.EnvelopeQueuedEvent({
+          id: getGuid(),
+          receivedAtCounter: 0,
+          receivedAtDate: receivedDate.getTime(),
+          messageAgeSec: moment().diff(receivedDate),
+          sourceServiceId: generateAci(),
+          destinationServiceId: '' as ServiceIdString,
+          timestamp,
+          serverGuid: getGuid(),
+          serverTimestamp: receivedDate.getTime(),
+          type: Proto.Envelope.Type.UNKNOWN,
+        })
+      );
+
+      // See `onEmpty` in `ts/background.ts`
+      // [!] make sure this is last because it sets 'hasInitialLoadCompleted'.
+      const onload = setTimeout(() => {
+        clearTimeout(onload);
+        this.dispatchEvent(new EmptyEvent());
+      }, 5000);
     });
   }
 
