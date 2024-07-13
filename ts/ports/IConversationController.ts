@@ -23,7 +23,7 @@ export type IConversationController = {
   getOrCreate: (
     identifier: string | null,
     type: ConversationAttributesTypeType,
-    additionalInitialProps: Partial<ConversationAttributesType>
+    additionalInitialProps?: Partial<ConversationAttributesType>
   ) => ConversationModel;
   getOrCreateAndWait: (
     id: string | null,

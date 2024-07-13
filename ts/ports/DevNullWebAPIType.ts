@@ -78,14 +78,21 @@ import type {
 } from '../textsecure/WebAPI';
 import type { IWebSocketResource } from '../textsecure/WebsocketResources';
 import type { BackupPresentationHeadersType } from '../types/backups';
-import type {
-  ServiceIdString,
-  ServiceIdKind,
-  UntaggedPniString,
+import {
+  type ServiceIdString,
+  type ServiceIdKind,
+  type UntaggedPniString,
+  toUntaggedPni,
+  PniString,
 } from '../types/ServiceId';
 import { SocketStatus } from '../types/SocketStatus';
 import type { VerificationTransport } from '../types/VerificationTransport';
 import type { FetchFunctionType } from '../util/uploads/tusProtocol';
+import { toDayMillis } from '../util/timestamp';
+import * as Curve from '../Curve';
+import { generateKeyPair } from '../Curve';
+import { fromString, toBase64 } from '../Bytes';
+import { AuthCredentialWithPni } from '@signalapp/libsignal-client/zkgroup';
 
 const resolve = <T>(result: T) => Promise.resolve(result);
 const resolveEmpty = () => Promise.resolve(new Uint8Array(0));
@@ -167,11 +174,37 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
 
   getGroupCredentials = (
     options: GetGroupCredentialsOptionsType
+    /*
+      {
+        startDayInMs: number;
+        endDayInMs: number;
+      }
+     */
   ): Promise<GetGroupCredentialsResultType> => {
+    console.log('getGroupCredentials', { opts: this.opts });
+
+    // const authCredential = new AuthCredentialWithPni(
+    //   Buffer.from(authCredentialBase64, 'base64')
+    // );
+
+    const authCredential = new AuthCredentialWithPni(
+      Buffer.from(this.opts.pni, 'ascii')
+    );
+
     const value: GetGroupCredentialsResultType = {
-      pni: this.opts.pni as UntaggedPniString,
-      callLinkAuthCredentials: [],
-      credentials: [],
+      pni: toUntaggedPni(this.opts.pni as PniString),
+      callLinkAuthCredentials: [
+        {
+          credential: toBase64(authCredential.contents),
+          redemptionTime: toDayMillis(Date.now()),
+        },
+      ],
+      credentials: [
+        {
+          credential: toBase64(authCredential.contents),
+          redemptionTime: toDayMillis(Date.now()),
+        },
+      ],
     };
 
     this.info('getGroupCredentials', { value });
@@ -195,13 +228,32 @@ export class DevNullWebAPIType implements WebAPIType, WebAPIConnectType {
   getKeysForServiceId = (
     serviceId: ServiceIdString,
     deviceId?: number
-  ): Promise<ServerKeysType> => resolve({} as ServerKeysType);
+  ): Promise<ServerKeysType> => {
+    const keyId = 1;
+    const identityKey = generateKeyPair();
+    const signedPreKey = Curve.generateSignedPreKey(identityKey, keyId);
+
+    return resolve({
+      devices: [
+        {
+          deviceId: deviceId || 1,
+          registrationId: 1,
+          signedPreKey: {
+            keyId: signedPreKey.keyId,
+            publicKey: signedPreKey.keyPair.pubKey,
+            signature: signedPreKey.signature,
+          },
+        },
+      ],
+      identityKey: identityKey.pubKey,
+    });
+  };
 
   getKeysForServiceIdUnauth = (
     serviceId: ServiceIdString,
     deviceId?: number,
     options?: { accessKey?: string }
-  ): Promise<ServerKeysType> => resolve({} as ServerKeysType);
+  ): Promise<ServerKeysType> => this.getKeysForServiceId(serviceId, deviceId);
 
   getMyKeyCounts = (
     serviceIdKind: ServiceIdKind

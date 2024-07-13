@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable max-len */
 // Copyright 2018 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
@@ -31,13 +32,13 @@ import {
 } from '../ports/DevNullConversationController';
 import { backupsService } from '../services/backups';
 import { calling } from '../services/calling';
-import { initializeGroupCredentialFetcher } from '../services/groupCredentialFetcher';
 import { initializeNetworkObserver } from '../services/networkObserver';
 import { initializeUpdateListener } from '../services/updateListener';
 import { createSafetyNumberViewer } from '../state/roots/createSafetyNumberViewer';
 import OS from '../util/os/osMain';
 import { markDone } from '../util/registration';
 import * as storage from '../services/storage';
+import { DevNullInitializeGroupCredentialFetcher } from '../ports/DevNullInitializeGroupCredentialFetcher';
 
 // Duplicated from `ts/signal.ts`
 type StringGetterType = (basePath: string) => string;
@@ -108,6 +109,8 @@ export const setup = (options: {
     groupId: newVersionTwoGroupId(),
     groupVersion,
     masterKey: newVersionTwoGroupMasterKey(),
+    publicParams: 'publicParams', // Conversation is missing required parameters. Cannot peek group call
+    secretParams: 'secretParams', // Conversation is missing required parameters. Cannot peek group call
   });
 
   /**
@@ -262,7 +265,7 @@ export const setup = (options: {
   const Services = {
     backups: backupsService,
     calling,
-    initializeGroupCredentialFetcher,
+    initializeGroupCredentialFetcher: DevNullInitializeGroupCredentialFetcher,
     initializeNetworkObserver,
     initializeUpdateListener,
 

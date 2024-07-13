@@ -2,9 +2,10 @@
 import { SignalProtocolStore } from '../SignalProtocolStore';
 import { Blocked } from '../textsecure/storage/Blocked';
 import { User } from '../textsecure/storage/User';
-import { generateAci, generatePni } from '../types/ServiceId';
+import type { PniString } from '../types/ServiceId';
+import { generateAci } from '../types/ServiceId';
 import type { StorageAccessType } from '../types/Storage';
-import { isDone, markDone } from '../util/registration';
+import { markDone } from '../util/registration';
 import type { IStorage } from './IStorage';
 
 export class DevNullStorage implements IStorage {
@@ -42,7 +43,7 @@ export class DevNullStorage implements IStorage {
       this.user.setCredentials({
         // See: ts/util/registration.ts
         aci: generateAci(),
-        pni: generatePni(),
+        pni: 'PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString,
         number: '',
         deviceId: 0,
         password: '',
