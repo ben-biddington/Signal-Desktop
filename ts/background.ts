@@ -234,7 +234,10 @@ export async function cleanupSessionResets(): Promise<void> {
 
 export async function startApp(): Promise<void> {
   window.textsecure.storage.protocol = new window.SignalProtocolStore();
-  await window.Signal.init();
+  if (window.Signal.init) {
+    await window.Signal.init();
+  }
+
   await window.textsecure.storage.init();
 
   if (window.initialTheme === ThemeType.light) {

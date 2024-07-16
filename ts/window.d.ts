@@ -137,7 +137,7 @@ type SettingsWindowPropsType = {
 };
 
 export type SignalCoreType = {
-  init: () => Promise<void>;
+  init?: () => Promise<void>;
   AboutWindowProps?: AboutWindowPropsType;
   Crypto: typeof Crypto;
   Curve: typeof Curve;
@@ -250,6 +250,7 @@ declare global {
     // Note: used in background.html, and not type-checked
     startApp: () => void;
     textsecure: TextSecureType;
+    useDevNull?: boolean;
 
     // IPC
     IPC: IPCType;

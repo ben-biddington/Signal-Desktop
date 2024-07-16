@@ -10,7 +10,8 @@ import 'moment/min/locales.min';
 
 import { textsecure } from '../../textsecure';
 import * as Attachments from '../attachments';
-import { mock, setup } from '../../signal';
+import { setup } from '../../signal';
+import { setup as mock } from '../../adapters/signal';
 import { addSensitivePath } from '../../util/privacy';
 import * as dns from '../../util/dns';
 import * as log from '../../logging/log';
