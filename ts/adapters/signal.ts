@@ -167,7 +167,7 @@ export const setup = (options: {
     active_at: yesterday,
     lastMessage: "What does Guy's shirt say? Save Eminem?",
     lastMessageStatus: 'read',
-    timestamp: yesterday,
+    timestamp: 1721108944927, // Tue Jul 16 2024 05:49:04 GMT+0000
     unreadMentionsCount: 0,
     lastMessageBodyRanges: [],
     lastMessageAuthor: 'You',
@@ -251,7 +251,23 @@ export const setup = (options: {
         source: contacts.me.serviceId,
         sourceDevice: 1,
         type: 'outgoing',
-        body: "Hey your hay's here ",
+        body: "Hey your hay's here",
+      },
+      {
+        timestamp: minutesAgo(2),
+        id: getGuid(),
+        conversationId: fergussonSlt.id,
+        received_at: 20,
+        seenStatus: 0,
+        sendStateByConversationId: {
+          [fergussonSlt.id]: { status: SendStatus.Pending },
+        },
+        sent_at: minutesAgo(1),
+        serverTimestamp: minutesAgo(1),
+        source: contacts.me.serviceId,
+        sourceDevice: 1,
+        type: 'outgoing',
+        body: "What does Guy's shirt say? Save Eminem?",
       }
     )
   );
