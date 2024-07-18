@@ -9,6 +9,7 @@ export class DevNullStorage implements IStorage {
   private readonly _user: User;
   public readonly blocked: Blocked;
   public initialised: boolean = false;
+  public readonly id = generateAci();
 
   private items: Partial<StorageAccessType> = Object.create(null);
 
@@ -41,17 +42,7 @@ export class DevNullStorage implements IStorage {
   constructor() {
     this._user = new User(this);
     this.blocked = new Blocked(this);
-    /*
-        [!] Forced to do this at the moment due to
-
-        ```ts
-          // ts/background.ts
-          ourProfileKeyService.initialize(window.storage);
-        ```
-
-        The `Storage` ctor assigns window.storage so we'll do the same.  
-    */
-    window.storage = this;
+    // [!] Not assigning `window.storage` like `Storage` does (ts/textsecure/Storage.ts)
   }
 
   public init = async (): Promise<void> => {
@@ -70,6 +61,7 @@ export class DevNullStorage implements IStorage {
   };
 
   public fetch = (): Promise<void> => {
+    window.storage = this;
     this.ready = true;
     this.callListeners();
     return Promise.resolve();

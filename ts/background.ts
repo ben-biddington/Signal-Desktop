@@ -2048,6 +2048,13 @@ export async function startApp(): Promise<void> {
   async function onEmpty(): Promise<void> {
     const { storage } = window.textsecure;
 
+    log.info(
+      'onEmpty storage.initialised',
+      // @ts-expect-error "ABC"
+      storage.initialised,
+      storage.user.getAci()
+    );
+
     await Promise.all([
       window.waitForAllBatchers(),
       window.flushAllWaitBatchers(),
@@ -2075,6 +2082,14 @@ export async function startApp(): Promise<void> {
 
     setBatchingStrategy(false);
     StartupQueue.flush();
+
+    log.info(
+      'onEmpty flushAttachmentDownloadQueue storage.initialised',
+      // @ts-expect-error "ABC"
+      storage.initialised,
+      storage.user.getAci()
+    );
+
     await flushAttachmentDownloadQueue();
 
     // Kick off a profile refresh if necessary, but don't wait for it, as failure is

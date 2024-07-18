@@ -22,6 +22,18 @@ const useDevNull = true;
 window.nodeSetImmediate = setImmediate;
 window.Backbone = Backbone;
 window.textsecure = useDevNull ? create() : textsecure();
+/*
+    [!] Forced to do this at the moment due to
+
+    ```ts
+      // ts/background.ts
+      ourProfileKeyService.initialize(window.storage);
+    ```
+
+    The `Storage` ctor assigns window.storage so we'll do the same here 
+    rather than have `DevNullStorage` do it.
+*/
+window.storage = window.textsecure.storage;
 
 const { config } = window.SignalContext;
 
