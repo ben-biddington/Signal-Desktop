@@ -9,7 +9,7 @@ import type {
   ConversationAttributesTypeType,
 } from '../model-types.d';
 import { ConversationModelCollectionType } from '../model-types.d';
-import { ConversationModel } from '../models/conversation-model';
+import { ConversationModel } from '../models/conversations';
 import type { AciString, PniString, ServiceIdString } from '../types/ServiceId';
 import { isServiceIdString, normalizePni } from '../types/ServiceId';
 import { normalizeAci } from '../util/normalizeAci';

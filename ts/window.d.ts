@@ -11,49 +11,29 @@ import type { PhoneNumber, PhoneNumberFormat } from 'google-libphonenumber';
 import type { MochaOptions } from 'mocha';
 
 import type { ConversationModelCollectionType } from './model-types.d';
-import type {
-  ChallengeHandler,
-  IPCRequest as IPCChallengeRequest,
-} from './challenge';
+import type { IPCRequest as IPCChallengeRequest } from './challenge';
 import type AccountManager from './textsecure/AccountManager';
 import type { WebAPIConnectType } from './textsecure/WebAPI';
-import type * as StorageService from './services/storage';
-import type { BackupsService } from './services/backups';
-import type * as Groups from './groups';
-import type * as Crypto from './Crypto';
-import type * as Curve from './Curve';
-import type * as RemoteConfig from './RemoteConfig';
-import type { OSType } from './util/os/shared';
 import type { getEnvironment } from './environment';
 import type { LocalizerType, ThemeType } from './types/Util';
 import type { Receipt } from './types/Receipt';
 import type { ReduxActions } from './state/types';
-import type { createApp } from './state/roots/createApp';
-import type Data from './sql/Client';
 import type { MessageModel } from './models/messages';
 import type { ConversationModel } from './models/conversations';
 import type { BatcherType } from './util/batcher';
-import type { ConfirmationDialog } from './components/ConfirmationDialog';
 import type { SignalProtocolStore } from './SignalProtocolStore';
 import type { SocketStatus } from './types/SocketStatus';
-import type { ScreenShareStatus } from './types/Calling';
 import type SyncRequest from './textsecure/SyncRequest';
 import type { MessageCache } from './services/MessageCache';
 import type { StateType } from './state/reducer';
-import type { Address } from './types/Address';
-import type { QualifiedAddress } from './types/QualifiedAddress';
 import type { CIType } from './CI';
 import type { IPCEventsType } from './util/createIPCEvents';
 import type { SignalContextType } from './windows/context';
-import type * as Message2 from './types/Message2';
-import type { initializeMigrations } from './signal';
-import type { RetryPlaceholders } from './util/retryPlaceholders';
-import type { PropsPreloadType as PreferencesPropsType } from './components/Preferences';
 import type { WindowsNotificationData } from './services/notifications';
 import type { IStorage } from './ports/IStorage';
 import type { IConversationController } from './ports/IConversationController';
-import type { ICalling } from './ports/ICalling';
 import type { TextSecureType } from './textsecure';
+import { SignalCoreType } from './SignalCoreType';
 
 export { Long } from 'long';
 
@@ -100,79 +80,6 @@ export type FeatureFlagType = {
   GV2_ENABLE_PRE_JOIN_FETCH: boolean;
   GV2_MIGRATION_DISABLE_ADD: boolean;
   GV2_MIGRATION_DISABLE_INVITE: boolean;
-};
-
-type AboutWindowPropsType = {
-  arch: string;
-  environmentText: string;
-  platform: string;
-};
-
-type DebugLogWindowPropsType = {
-  downloadLog: (text: string) => unknown;
-  fetchLogs: () => Promise<string>;
-  uploadLogs: (text: string) => Promise<string>;
-};
-
-type PermissionsWindowPropsType = {
-  forCamera: boolean;
-  forCalling: boolean;
-  onAccept: () => void;
-  onClose: () => void;
-};
-
-type ScreenShareWindowPropsType = {
-  onStopSharing: () => void;
-  presentedSourceName: string;
-  getStatus: () => ScreenShareStatus;
-  setRenderCallback: (cb: () => void) => void;
-};
-
-type SettingsOnRenderCallbackType = (props: PreferencesPropsType) => void;
-
-type SettingsWindowPropsType = {
-  onRender: (callback: SettingsOnRenderCallbackType) => void;
-};
-
-export type SignalCoreType = {
-  init?: () => Promise<void>;
-  AboutWindowProps?: AboutWindowPropsType;
-  Crypto: typeof Crypto;
-  Curve: typeof Curve;
-  Data: typeof Data;
-  DebugLogWindowProps?: DebugLogWindowPropsType;
-  Groups: typeof Groups;
-  PermissionsWindowProps?: PermissionsWindowPropsType;
-  RemoteConfig: typeof RemoteConfig;
-  ScreenShareWindowProps?: ScreenShareWindowPropsType;
-  Services: {
-    calling: ICalling;
-    backups: BackupsService;
-    initializeGroupCredentialFetcher: () => Promise<void>;
-    initializeNetworkObserver: (network: ReduxActions['network']) => void;
-    initializeUpdateListener: (updates: ReduxActions['updates']) => void;
-    retryPlaceholders?: RetryPlaceholders;
-    lightSessionResetQueue?: PQueue;
-    storage: typeof StorageService;
-  };
-  SettingsWindowProps?: SettingsWindowPropsType;
-  Migrations: ReturnType<typeof initializeMigrations>;
-  Types: {
-    Message: typeof Message2;
-    Address: typeof Address;
-    QualifiedAddress: typeof QualifiedAddress;
-  };
-  Components: {
-    ConfirmationDialog: typeof ConfirmationDialog;
-  };
-  OS: OSType;
-  State: {
-    Roots: {
-      createApp: typeof createApp;
-    };
-  };
-  conversationControllerStart: () => void;
-  challengeHandler?: ChallengeHandler;
 };
 
 declare global {
