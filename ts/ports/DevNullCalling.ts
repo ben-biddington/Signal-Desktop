@@ -14,7 +14,6 @@ import type {
   CallingReduxInterface,
   NotifyScreenShareStatusOptionsType,
 } from '../services/calling';
-import type { ConversationType } from '../sql/Interface';
 import type {
   GroupCallPeekInfoType,
   GroupCallParticipantInfoType,
@@ -37,6 +36,7 @@ import type {
 } from '../types/CallLink';
 import type { AciString } from '../types/ServiceId';
 import type { ICalling } from './ICalling';
+import type { ConversationType } from '../state/ducks/conversations';
 
 const resolveVoid = () => Promise.resolve();
 const resolve = <T>(result: T) => Promise.resolve(result);

@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 // Copyright 2018 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
@@ -12,12 +11,12 @@ import * as Groups from '../groups';
 import { toBase64 } from '../Bytes';
 import { getRandomBytes } from '../Crypto';
 import { DevNullClientInterface } from '../ports/DevNullClientInterface';
-import { createMessage, DevNullMessages } from '../ports/DevNullMessages';
+import { DevNullMessages } from '../ports/DevNullMessages';
 import type { Ports } from '../ports/ports';
 import { newPorts } from '../ports/ports';
 import { initializeMigrations } from '../signal';
 import type { LoggerType } from '../types/Logging';
-import type { PniString } from '../types/ServiceId';
+import type { AciString, PniString } from '../types/ServiceId';
 import type { SignalCoreType } from '../window';
 import * as TypesAttachment from '../types/Attachment';
 import * as VisualAttachment from '../types/VisualAttachment';
@@ -40,7 +39,14 @@ import { markDone } from '../util/registration';
 import * as storage from '../services/storage';
 import { DevNullInitializeGroupCredentialFetcher } from '../ports/DevNullInitializeGroupCredentialFetcher';
 import { DevNullCalling } from '../ports/DevNullCalling';
-import { unixTimestamp } from './date-time';
+import { minutesAgo, unixTimestamp } from './date-time';
+import { StorySendMode } from '../types/Stories';
+import { DurationInSeconds } from '../util/durations';
+import { SignalService as Proto } from '../protobuf';
+import MemberRoleEnum = Proto.Member.Role;
+import { SendStatus } from '../messages/MessageSendState';
+import { contacts } from './Contacts';
+import type { ConversationAttributesType } from '../model-types';
 
 // Duplicated from `ts/signal.ts`
 type StringGetterType = (basePath: string) => string;
@@ -99,175 +105,154 @@ export const setup = (options: {
   logger: LoggerType;
   userDataPath: string;
 }): SignalCoreType => {
-  const groupVersion = 2;
-
   const newVersionTwoGroupId = () =>
     toBase64(deriveGroupFields(getRandomBytes(Groups.ID_LENGTH)).id);
 
   const newVersionTwoGroupMasterKey = () =>
     toBase64(getRandomBytes(Groups.ID_LENGTH));
 
-  const createNewGroup = () => ({
-    groupId: newVersionTwoGroupId(),
-    groupVersion,
-    masterKey: newVersionTwoGroupMasterKey(),
-    publicParams: 'publicParams', // Conversation is missing required parameters. Cannot peek group call
-    secretParams: 'secretParams', // Conversation is missing required parameters. Cannot peek group call
-  });
-
-  /**
-   
-    @todo: using type: 'private' causes error:
-
-    {
-      id: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-      type: 'private',
-      ...createNewGroup(),
-      version: 0,
-      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
-      description: 'Conversation 1',
-      members: ['dc4098ad-dd0f-4250-a05b-796716d2b838'],
-      name: 'Note to self',
-      serviceId: 'PNI:c9023f3a-bbca-4242-8306-475677c0a5ca' as PniString,
-    },
-
-    Uncaught (in promise) Error: Conversation.format()/PNI:dc46c18a-39eb-4251-be05-d00c00e605f2 (cfcdd0fa-ca11-4044-b282-e69d98107f40) reentrant call, no old cached props!
-      at ConversationModel.format (VM113 preload.bundle.js:310150:19)
-      at VM113 preload.bundle.js:308247:211
-      at Array.map (<anonymous>)
-      at getConversation (VM113 preload.bundle.js:308247:149)
-      at ConversationModel.format (VM113 preload.bundle.js:310162:34)
-      at VM113 preload.bundle.js:316013:36
-      at arrayMap (VM113 preload.bundle.js:523:27)
-      at Function.map (VM113 preload.bundle.js:4101:18)
-      at Backbone3.Collection.map (VM113 preload.bundle.js:69387:34)
-      at getInitialState (VM113 preload.bundle.js:316012:50)
-      format @ VM113 preload.bundle.js:310150
-      (anonymous) @ VM113 preload.bundle.js:308247
-      getConversation @ VM113 preload.bundle.js:308247
-      format @ VM113 preload.bundle.js:310162
-      (anonymous) @ VM113 preload.bundle.js:316013
-      arrayMap @ VM113 preload.bundle.js:523
-      map @ VM113 preload.bundle.js:4101
-      (anonymous) @ VM113 preload.bundle.js:69387
-      getInitialState @ VM113 preload.bundle.js:316012
-      initializeRedux @ VM113 preload.bundle.js:316156
-      setupAppState @ VM113 preload.bundle.js:318095
-      (anonymous) @ VM113 preload.bundle.js:318065
-      await in (anonymous) (async)
-      (anonymous) @ VM113 preload.bundle.js:302566
-      callListeners @ VM113 preload.bundle.js:302566
-      fetch @ VM113 preload.bundle.js:302557
-      startApp @ VM113 preload.bundle.js:318089
-      await in startApp (async)
-      (anonymous) @ background.html:119
-  */
-
   const yesterday = unixTimestamp(moment().subtract(3, 'days').toDate());
 
+  const fergussonSlt: ConversationAttributesType = {
+    serviceId: 'PNI:7300202f-1657-40be-b7a2-dff80f9b9ffb' as PniString,
+    unreadCount: 2,
+    verified: 1,
+    messageCount: 236,
+    sentMessageCount: 43,
+    id: newVersionTwoGroupId(),
+    groupId: 'P+4GA58PmF0GJHpMsZTCZZ6VDFBlLaYT43TfMmk2DM4=',
+    type: 'group',
+    version: 2,
+    groupVersion: 2,
+    masterKey: newVersionTwoGroupMasterKey(),
+    secretParams: 'secretParams',
+    publicParams: 'publicParams',
+    sealedSender: 0,
+    color: 'A200',
+    hideStory: false,
+    isArchived: false,
+    markedUnread: false,
+    dontNotifyForMentionsIfMuted: false,
+    storySendMode: StorySendMode.IfActive,
+    muteExpiresAt: 0,
+    messageRequestResponseType: 1,
+    profileSharing: true,
+    revision: 10,
+    name: 'Fergusson SLT',
+    expireTimer: DurationInSeconds.fromSeconds(0),
+    accessControl: { attributes: 2, members: 2, addFromInviteLink: 4 },
+    left: false,
+    membersV2: [
+      {
+        aci: contacts.cath.serviceId as AciString,
+        approvedByAdmin: true,
+        joinedAtVersion: 1,
+        role: MemberRoleEnum.ADMINISTRATOR,
+      },
+      {
+        aci: contacts.christina.serviceId as AciString,
+        approvedByAdmin: true,
+        joinedAtVersion: 1,
+        role: MemberRoleEnum.DEFAULT,
+      },
+      {
+        aci: contacts.dave.serviceId as AciString,
+        approvedByAdmin: true,
+        joinedAtVersion: 1,
+        role: MemberRoleEnum.DEFAULT,
+      },
+    ],
+    description: 'Incorrect spelling on purpose',
+    announcementsOnly: false,
+    active_at: yesterday,
+    lastMessage: "What does Guy's shirt say? Save Eminem?",
+    lastMessageStatus: 'read',
+    timestamp: yesterday,
+    unreadMentionsCount: 0,
+    lastMessageBodyRanges: [],
+    lastMessageAuthor: 'You',
+    lastMessageReceivedAt: yesterday,
+    lastMessageReceivedAtMs: yesterday,
+    draft: '',
+    draftBodyRanges: [],
+    draftChanged: true,
+  };
+
   const conversationController = new DevNullConversationController(
-    {
-      id: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-      active_at: yesterday,
-      type: 'group',
-      ...createNewGroup(),
-      version: 0,
-      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
-      description: 'Conversation 1',
-      members: ['dc4098ad-dd0f-4250-a05b-796716d2b838'],
-      name: 'Name',
-      serviceId: 'PNI:c9023f3a-bbca-4242-8306-475677c0a5ca' as PniString,
-      lastMessage: 'A B C',
-    },
-    {
-      id: 'de982c0a-cf3c-433e-b25c-e3315bd290e6',
-      active_at: yesterday,
-      type: 'group',
-      ...createNewGroup(),
-      version: 0,
-      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
-      description: 'Conversation 2',
-      members: [
-        'dc4098ad-dd0f-4250-a05b-796716d2b838',
-        'f90f61cd-ec82-478e-a9da-a10c2cd75b8d',
-        '3f8b7839-d49a-4e63-8444-25508ea9418f',
-      ],
-      name: 'Conversation 2',
-      serviceId: 'PNI:9b58a16e-699a-4d62-ad95-24ec0c5985ec' as PniString,
-      lastMessage: 'D E F',
-    },
-    {
-      id: '5ab1a933-9d2d-4a9a-887f-9f696398931b',
-      active_at: yesterday,
-      isPinned: true,
-      type: 'group',
-      ...createNewGroup(),
-      version: 0,
-      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
-      description: 'Conversation 2',
-      members: [
-        'dc4098ad-dd0f-4250-a05b-796716d2b838',
-        'f90f61cd-ec82-478e-a9da-a10c2cd75b8d',
-        '3f8b7839-d49a-4e63-8444-25508ea9418f',
-      ],
-      name: 'Conversation 3',
-      serviceId: 'PNI:7d83b820-3104-46d2-96d9-bf6e88c860e4' as PniString,
-      lastMessage: 'G H I',
-    },
-    {
-      id: getGuid(),
-      active_at: yesterday,
-      isArchived: true,
-      type: 'group',
-      ...createNewGroup(),
-      version: 0,
-      addedBy: 'dc4098ad-dd0f-4250-a05b-796716d2b838',
-      description: 'Archived 1',
-      members: ['dc4098ad-dd0f-4250-a05b-796716d2b838'],
-      name: 'Archived 1',
-      serviceId: 'PNI:c9023f3a-bbca-4242-8306-475677c0a5ca' as PniString,
-      lastMessage: 'XXX',
-    }
+    contacts.me,
+    [
+      contacts.me,
+      contacts.cath,
+      contacts.christina,
+      contacts.dave,
+      fergussonSlt,
+    ]
   );
 
   const startConversationController = () => start(conversationController);
 
   const data = new DevNullClientInterface(
     new DevNullMessages(
-      createMessage({
-        id: 'msg-1',
-        conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        body: 'A B C',
-        // contact: [
-        //   {
-        //     name: { displayName: 'Derwood' },
-        //     number: [{ value: '+64220170046', type: ContactFormType.MOBILE }],
-        //     serviceId: 'PNI:f90f61cd-ec82-478e-a9da-a10c2cd75b8d' as PniString,
-        //   },
-        // ],
-      }),
-      createMessage({
-        id: 'msg-2',
-        conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        body: 'D E F',
-      }),
-      createMessage({
-        id: 'msg-3',
-        conversationId: '78482982-a260-4d0a-a55a-90f8e2a01f26',
-        body: 'G H I',
-        // contact: [
-        //   {
-        //     name: { displayName: 'Ben' },
-        //     number: [{ value: '+64220170045', type: ContactFormType.MOBILE }],
-        //     serviceId: 'PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString,
-        //   },
-        //   {
-        //     name: { displayName: 'Derwood' },
-        //     number: [{ value: '+64220170046', type: ContactFormType.MOBILE }],
-        //     serviceId: 'PNI:f90f61cd-ec82-478e-a9da-a10c2cd75b8d' as PniString,
-        //   },
-        // ],
-      })
+      {
+        timestamp: minutesAgo(30),
+        id: getGuid(),
+        conversationId: fergussonSlt.id,
+        received_at: minutesAgo(30),
+        sendStateByConversationId: {
+          [fergussonSlt.id]: { status: SendStatus.Delivered },
+        },
+        sent_at: minutesAgo(5),
+        serverTimestamp: minutesAgo(5),
+        sourceServiceId: contacts.dave.serviceId,
+        type: 'incoming',
+        body: 'No only a month old. From the Phoenix game.',
+      },
+      {
+        timestamp: minutesAgo(10),
+        id: getGuid(),
+        conversationId: fergussonSlt.id,
+        received_at: minutesAgo(10),
+        seenStatus: 0,
+        sendStateByConversationId: {
+          [fergussonSlt.id]: { status: SendStatus.Pending },
+        },
+        sent_at: minutesAgo(10),
+        serverTimestamp: minutesAgo(10),
+        sourceServiceId: contacts.cath.serviceId,
+        type: 'incoming',
+        body: 'Test from Cath',
+      },
+      {
+        timestamp: minutesAgo(10),
+        id: getGuid(),
+        conversationId: fergussonSlt.id,
+        received_at: 20,
+        seenStatus: 0,
+        sendStateByConversationId: {
+          [fergussonSlt.id]: { status: SendStatus.Read },
+        },
+        sent_at: minutesAgo(10),
+        serverTimestamp: minutesAgo(10),
+        sourceServiceId: contacts.christina.serviceId,
+        type: 'incoming',
+        body: 'Nice one',
+      },
+      {
+        timestamp: minutesAgo(10),
+        id: getGuid(),
+        conversationId: contacts.cath.id,
+        received_at: 20,
+        seenStatus: 0,
+        sendStateByConversationId: {
+          [contacts.cath.id]: { status: SendStatus.Read },
+        },
+        sent_at: minutesAgo(1),
+        serverTimestamp: minutesAgo(1),
+        source: contacts.me.serviceId,
+        sourceDevice: 1,
+        type: 'outgoing',
+        body: "Hey your hay's here ",
+      }
     )
   );
 

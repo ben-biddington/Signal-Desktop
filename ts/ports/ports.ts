@@ -6,6 +6,7 @@ import type { TextSecureType } from '../textsecure';
 import { create } from './DevNullTextSecure';
 import type { IConversationController } from './IConversationController';
 import { DevNullConversationController } from './DevNullConversationController';
+import { contacts } from '../adapters/Contacts';
 
 export type InitializeGroupCredentialFetcher = () => Promise<void>;
 
@@ -44,5 +45,5 @@ export const devNull: () => Ports = () => ({
   initializeGroupCredentialFetcher: DevNullInitializeGroupCredentialFetcher,
   remoteConfig: new DevNullRemoteConfig(),
   textsecure: create(),
-  conversationController: new DevNullConversationController(),
+  conversationController: new DevNullConversationController(contacts.me),
 });

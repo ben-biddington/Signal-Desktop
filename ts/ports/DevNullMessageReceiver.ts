@@ -1,54 +1,18 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-console */
 
+// eslint-disable-next-line max-classes-per-file
 import moment from 'moment';
 import { v4 as getGuid } from 'uuid';
-import type { EventHandler } from '../textsecure/EventTarget';
-import type {
-  CallEventSyncEvent,
-  EnvelopeQueuedEvent,
-  EnvelopeUnsealedEvent,
-  ProgressEvent,
-  TypingEvent,
-  ErrorEvent,
-  DeliveryEvent,
-  DecryptionErrorEvent,
-  SentEvent,
-  ProfileKeyUpdateEvent,
-  InvalidPlaintextEvent,
-  MessageEvent,
-  RetryRequestEvent,
-  ReadEvent,
-  ViewEvent,
-  ConfigurationEvent,
-  ViewOnceOpenSyncEvent,
-  MessageRequestResponseEvent,
-  FetchLatestEvent,
-  StickerPackEvent,
-  ReadSyncEvent,
-  ViewSyncEvent,
-  StoryRecipientUpdateEvent,
-  CallLogEventSyncEvent,
-  CallLinkUpdateSyncEvent,
-  DeleteForMeSyncEvent,
-} from '../textsecure/messageReceiverEvents';
 import { EmptyEvent } from '../textsecure/messageReceiverEvents';
 import * as messageReceiverEvents from '../textsecure/messageReceiverEvents';
-import type { IRequestHandler } from '../textsecure/Types';
 import type { IncomingWebSocketRequest } from '../textsecure/WebsocketResources';
-import EventTarget from '../textsecure/EventTarget';
 import { SignalService as Proto } from '../protobuf';
 import { generateAci, type ServiceIdString } from '../types/ServiceId';
 import { now, unixTimestamp } from '../adapters/date-time';
+import { IMessageReceiver } from './IMessageReceiver';
 
-export class EventTargetMessageReceiver
-  extends EventTarget
-  implements IRequestHandler
-{
-  handleRequest(request: IncomingWebSocketRequest): void {
-    console.log('[DevNullMessageReceiver]', { request });
-  }
-
+export class DevNullMessageReceiver extends IMessageReceiver {
   constructor() {
     super();
 
@@ -139,179 +103,12 @@ export class EventTargetMessageReceiver
     });
   }
 
-  // region Taken from `MessageReceiver`
-
-  public stopProcessing(): void {}
-
-  public getAndResetProcessedCount(): number {
-    return 0;
-  }
-
-  public reset(): void {}
-
-  public hasEmptied(): boolean {
-    return false;
-  }
-
-  public async drain(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  // endregion Taken from `MessageReceiver`
-
-  public override addEventListener(
-    name: 'empty',
-    handler: (ev: EmptyEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'progress',
-    handler: (ev: ProgressEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'typing',
-    handler: (ev: TypingEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'error',
-    handler: (ev: ErrorEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'delivery',
-    handler: (ev: DeliveryEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'decryption-error',
-    handler: (ev: DecryptionErrorEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'invalid-plaintext',
-    handler: (ev: InvalidPlaintextEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'sent',
-    handler: (ev: SentEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'profileKeyUpdate',
-    handler: (ev: ProfileKeyUpdateEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'message',
-    handler: (ev: MessageEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'retry-request',
-    handler: (ev: RetryRequestEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'read',
-    handler: (ev: ReadEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'view',
-    handler: (ev: ViewEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'configuration',
-    handler: (ev: ConfigurationEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'viewOnceOpenSync',
-    handler: (ev: ViewOnceOpenSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'messageRequestResponse',
-    handler: (ev: MessageRequestResponseEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'fetchLatest',
-    handler: (ev: FetchLatestEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'keys',
-    handler: (ev: messageReceiverEvents.KeysEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'sticker-pack',
-    handler: (ev: StickerPackEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'readSync',
-    handler: (ev: ReadSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'viewSync',
-    handler: (ev: ViewSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'contactSync',
-    handler: (ev: messageReceiverEvents.ContactSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'envelopeQueued',
-    handler: (ev: EnvelopeQueuedEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'envelopeUnsealed',
-    handler: (ev: EnvelopeUnsealedEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'storyRecipientUpdate',
-    handler: (ev: StoryRecipientUpdateEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'callEventSync',
-    handler: (ev: CallEventSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'callLinkUpdateSync',
-    handler: (ev: CallLinkUpdateSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'callLogEventSync',
-    handler: (ev: CallLogEventSyncEvent) => void
-  ): void;
-
-  public override addEventListener(
-    name: 'deleteForMeSync',
-    handler: (ev: DeleteForMeSyncEvent) => void
-  ): void;
-
-  public override addEventListener(name: string, handler: EventHandler): void {
-    return super.addEventListener(name, handler);
-  }
-
-  public override removeEventListener(
-    name: string,
-    handler: EventHandler
-  ): void {
-    return super.removeEventListener(name, handler);
+  public getAndResetProcessedCount = (): number => 0;
+  public reset = (): void => {};
+  public stopProcessing = (): void => {};
+  public override hasEmptied = (): boolean => false;
+  public override drain = (): Promise<void> => Promise.resolve();
+  public handleRequest(request: IncomingWebSocketRequest): void {
+    console.log('[DevNullMessageReceiver]', { request });
   }
 }

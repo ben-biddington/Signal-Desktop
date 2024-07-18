@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
+import { contacts } from '../adapters/Contacts';
 import { SignalProtocolStore } from '../SignalProtocolStore';
 import { Blocked } from '../textsecure/storage/Blocked';
 import { User } from '../textsecure/storage/User';
-import type { PniString } from '../types/ServiceId';
+import type { AciString, PniString } from '../types/ServiceId';
 import { generateAci } from '../types/ServiceId';
 import type { StorageAccessType } from '../types/Storage';
 import { markDone } from '../util/registration';
@@ -39,11 +40,14 @@ export class DevNullStorage implements IStorage {
   }
 
   public init = async (): Promise<void> => {
+    const { me } = contacts;
+
     await Promise.all([
       this.user.setCredentials({
         // See: ts/util/registration.ts
-        aci: generateAci(),
-        pni: 'PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString,
+        aci: me.id as AciString,
+        pni:
+          me.pni || ('PNI:dc46c18a-39eb-4251-be05-d00c00e605f2' as PniString),
         number: '',
         deviceId: 0,
         password: '',

@@ -11,15 +11,12 @@ import type { PhoneNumber, PhoneNumberFormat } from 'google-libphonenumber';
 import type { MochaOptions } from 'mocha';
 
 import type { ConversationModelCollectionType } from './model-types.d';
-import type { textsecure, TextSecureType } from './textsecure';
-import type { Storage } from './textsecure/Storage';
 import type {
   ChallengeHandler,
   IPCRequest as IPCChallengeRequest,
 } from './challenge';
 import type AccountManager from './textsecure/AccountManager';
 import type { WebAPIConnectType } from './textsecure/WebAPI';
-import type { CallingClass } from './services/calling';
 import type * as StorageService from './services/storage';
 import type { BackupsService } from './services/backups';
 import type * as Groups from './groups';
@@ -30,7 +27,6 @@ import type { OSType } from './util/os/shared';
 import type { getEnvironment } from './environment';
 import type { LocalizerType, ThemeType } from './types/Util';
 import type { Receipt } from './types/Receipt';
-import type { ConversationController } from './ConversationController';
 import type { ReduxActions } from './state/types';
 import type { createApp } from './state/roots/createApp';
 import type Data from './sql/Client';
@@ -54,8 +50,10 @@ import type { initializeMigrations } from './signal';
 import type { RetryPlaceholders } from './util/retryPlaceholders';
 import type { PropsPreloadType as PreferencesPropsType } from './components/Preferences';
 import type { WindowsNotificationData } from './services/notifications';
-import { IStorage } from './ports/IStorage';
-import { IConversationController } from './ports/IConversationController';
+import type { IStorage } from './ports/IStorage';
+import type { IConversationController } from './ports/IConversationController';
+import type { ICalling } from './ports/ICalling';
+import type { TextSecureType } from './textsecure';
 
 export { Long } from 'long';
 
@@ -148,7 +146,7 @@ export type SignalCoreType = {
   RemoteConfig: typeof RemoteConfig;
   ScreenShareWindowProps?: ScreenShareWindowPropsType;
   Services: {
-    calling: CallingClass;
+    calling: ICalling;
     backups: BackupsService;
     initializeGroupCredentialFetcher: () => Promise<void>;
     initializeNetworkObserver: (network: ReduxActions['network']) => void;

@@ -102,9 +102,6 @@ export class User {
   }
 
   public getCheckedAci(): AciString {
-    log.info('getCheckedAci', new Error().stack);
-    // @ts-expect-error "ABC"
-    log.info('getCheckedAci', window.storage.initialised);
     const aci = this.getAci();
     strictAssert(aci !== undefined, 'Must have our own ACI');
     return aci;

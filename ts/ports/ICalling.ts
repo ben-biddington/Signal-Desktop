@@ -8,7 +8,7 @@ import type {
   VideoRequest,
 } from '@signalapp/ringrtc';
 import type { CallLinkAuthCredentialPresentation } from '@signalapp/libsignal-client/zkgroup';
-import type { ConversationType } from '../sql/Interface';
+import type { ConversationType } from '../state/ducks/conversations';
 import type {
   GroupCallParticipantInfoType,
   GroupCallPeekInfoType,
@@ -38,13 +38,14 @@ import type { SignalService as Proto } from '../protobuf';
 
 export type ICalling = {
   initialize: (reduxInterface: CallingReduxInterface, sfuUrl: string) => void;
-  startCallingLobby(
+
+  startCallingLobby: (
     options: Readonly<{
       conversation: Readonly<ConversationType>;
       hasLocalAudio: boolean;
       hasLocalVideo: boolean;
     }>
-  ): Promise<
+  ) => Promise<
     | undefined
     | ({ hasLocalAudio: boolean; hasLocalVideo: boolean } & (
         | { callMode: CallMode.Direct }

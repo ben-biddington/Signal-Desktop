@@ -57,7 +57,7 @@ import { senderCertificateService } from './services/senderCertificate';
 import { GROUP_CREDENTIALS_KEY } from './services/groupCredentialFetcher';
 import * as KeyboardLayout from './services/keyboardLayout';
 import * as StorageService from './services/storage';
-import { usernameIntegrity } from './services/usernameIntegrity';
+import { UsernameIntegrityService } from './services/usernameIntegrity';
 import { updateIdentityKey } from './services/profiles';
 import { RoutineProfileRefresher } from './routineProfileRefresh';
 import { isOlderThan } from './util/timestamp';
@@ -139,7 +139,7 @@ import {
 } from './util/handleRetry';
 import { themeChanged } from './shims/themeChanged';
 import { createIPCEvents } from './util/createIPCEvents';
-import type { ServiceIdString } from './types/ServiceId';
+import type { PniString, ServiceIdString } from './types/ServiceId';
 import {
   ServiceIdKind,
   isPniString,
@@ -209,7 +209,11 @@ import type { ReadSyncTaskType } from './messageModifiers/ReadSyncs';
 import { isEnabled } from './RemoteConfig';
 import { AttachmentBackupManager } from './jobs/AttachmentBackupManager';
 import { getConversationIdForLogging } from './util/idForLogging';
-import { encryptConversationAttachments } from './util/encryptConversationAttachments';
+import { DevNullMessageSender } from './ports/DevNullMessageSender';
+import { DevNullWebAPIType } from './ports/DevNullWebAPIType';
+import type { IMessageReceiver } from './ports/IMessageReceiver';
+import { DevNullMessageReceiver } from './ports/DevNullMessageReceiver';
+import { DevNullUsernameIntegrityService } from './ports/DevNullUsernameIntegrityService';
 
 export function isOverHourIntoPast(timestamp: number): boolean {
   return isNumber(timestamp) && isOlderThan(timestamp, HOUR);
@@ -233,6 +237,9 @@ export async function cleanupSessionResets(): Promise<void> {
 }
 
 export async function startApp(): Promise<void> {
+  const usernameIntegrity = window.useDevNull
+    ? new DevNullUsernameIntegrityService()
+    : new UsernameIntegrityService();
   window.textsecure.storage.protocol = new window.SignalProtocolStore();
   if (window.Signal.init) {
     await window.Signal.init();
@@ -268,7 +275,7 @@ export async function startApp(): Promise<void> {
 
   // Initialize WebAPI as early as possible
   let server: WebAPIType | undefined;
-  let messageReceiver: MessageReceiver | undefined;
+  let messageReceiver: IMessageReceiver | undefined;
   let challengeHandler: ChallengeHandler | undefined;
   let routineProfileRefresher: RoutineProfileRefresher | undefined;
 
@@ -507,12 +514,18 @@ export async function startApp(): Promise<void> {
     }
     first = false;
 
-    server = window.WebAPI.connect({
-      ...window.textsecure.storage.user.getWebAPICredentials(),
-      hasStoriesDisabled: window.storage.get('hasStoriesDisabled', false),
-    });
+    server = window.useDevNull
+      ? new DevNullWebAPIType({
+          pni: 'PNI:dc4098ad-dd0f-4250-a05b-796716d2b838' as PniString,
+        })
+      : window.WebAPI.connect({
+          ...window.textsecure.storage.user.getWebAPICredentials(),
+          hasStoriesDisabled: window.storage.get('hasStoriesDisabled', false),
+        });
     window.textsecure.server = server;
-    window.textsecure.messaging = new window.textsecure.MessageSender(server);
+    window.textsecure.messaging = window.useDevNull
+      ? new DevNullMessageSender()
+      : new MessageSender(server);
 
     challengeHandler = new ChallengeHandler({
       storage: window.storage,
@@ -567,11 +580,34 @@ export async function startApp(): Promise<void> {
     window.Signal.challengeHandler = challengeHandler;
 
     log.info('Initializing MessageReceiver');
-    messageReceiver = new MessageReceiver({
-      server,
-      storage: window.storage,
-      serverTrustRoot: window.getServerTrustRoot(),
-    });
+
+    messageReceiver = window.useDevNull
+      ? new DevNullMessageReceiver()
+      : new MessageReceiver({
+          server,
+          storage: window.storage,
+          serverTrustRoot: window.getServerTrustRoot(),
+        });
+
+    const onFirstEmpty = async () => {
+      log.info('onFirstEmpty: Starting');
+
+      // We want to remove this handler on the next tick so we don't interfere with
+      //   the other handlers being notified of this instance of the 'empty' event.
+      setTimeout(() => {
+        messageReceiver?.removeEventListener('empty', onFirstEmpty);
+      }, 1);
+
+      log.info('onFirstEmpty: Fetching sync tasks');
+      const syncTasks = await window.Signal.Data.getAllSyncTasks();
+
+      log.info(`onFirstEmpty: Queuing ${syncTasks.length} sync tasks`);
+      await queueSyncTasks(syncTasks, window.Signal.Data.removeSyncTaskById);
+
+      log.info('onFirstEmpty: Done');
+    };
+
+    messageReceiver.addEventListener('empty', onFirstEmpty);
 
     function queuedEventListener<E extends Event>(
       handler: (event: E) => Promise<void> | void,

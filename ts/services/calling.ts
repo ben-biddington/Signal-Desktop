@@ -157,7 +157,7 @@ import type {
   ReadCallLinkState,
 } from '../types/CallLink';
 import { CallLinkRestrictions } from '../types/CallLink';
-import { getConversationIdForLogging } from '../util/idForLogging';
+import type { ICalling } from '../ports/ICalling';
 
 const {
   processGroupCallRingCancellation,
@@ -190,7 +190,7 @@ enum GroupCallUpdateMessageState {
   SentLeft,
 }
 
-type CallingReduxInterface = Pick<
+export type CallingReduxInterface = Pick<
   CallingReduxActionsType,
   | 'callStateChange'
   | 'cancelIncomingGroupCallRing'
@@ -347,7 +347,7 @@ export type NotifyScreenShareStatusOptionsType = Readonly<
   )
 >;
 
-export class CallingClass {
+export class CallingClass implements ICalling {
   readonly videoCapturer: GumVideoCapturer;
 
   readonly videoRenderer: CanvasVideoRenderer;

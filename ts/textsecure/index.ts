@@ -11,6 +11,7 @@ import { Storage } from './Storage';
 import type { IStorage } from '../ports/IStorage';
 import * as WebAPI from './WebAPI';
 import WebSocketResource from './WebsocketResources';
+import type { IMessageSender } from '../ports/IMessageSender';
 
 export type TextSecureType = {
   utils: typeof utils;
@@ -25,7 +26,7 @@ export type TextSecureType = {
   WebSocketResource: typeof WebSocketResource;
 
   server?: WebAPI.WebAPIType;
-  messaging?: MessageSender;
+  messaging?: IMessageSender;
 };
 
 export const textsecure = (): TextSecureType => ({

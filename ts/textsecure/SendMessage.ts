@@ -39,6 +39,7 @@ import type {
   GetProfileUnauthOptionsType,
   GroupCredentialsType,
   GroupLogResponseType,
+  MakeProxiedRequestResultType,
   ProxiedRequestOptionsType,
   WebAPIType,
 } from './WebAPI';
@@ -2308,14 +2309,11 @@ export default class MessageSender implements IMessageSender {
     return this.server.getProfile(serviceId, options);
   }
 
-  async getAvatar(path: string): Promise<ReturnType<WebAPIType['getAvatar']>> {
+  async getAvatar(path: string): Promise<Uint8Array> {
     return this.server.getAvatar(path);
   }
 
-  async getSticker(
-    packId: string,
-    stickerId: number
-  ): Promise<ReturnType<WebAPIType['getSticker']>> {
+  async getSticker(packId: string, stickerId: number): Promise<Uint8Array> {
     return this.server.getSticker(packId, stickerId);
   }
 
@@ -2388,7 +2386,7 @@ export default class MessageSender implements IMessageSender {
   async makeProxiedRequest(
     url: string,
     options?: Readonly<ProxiedRequestOptionsType>
-  ): Promise<ReturnType<WebAPIType['makeProxiedRequest']>> {
+  ): Promise<MakeProxiedRequestResultType> {
     return this.server.makeProxiedRequest(url, options);
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { v4 as generateUuid } from 'uuid';
@@ -8,7 +9,7 @@ import type {
   ConversationAttributesTypeType,
 } from '../model-types.d';
 import { ConversationModelCollectionType } from '../model-types.d';
-import type { ConversationModel } from '../models/conversation-model';
+import { ConversationModel } from '../models/conversation-model';
 import type { AciString, PniString, ServiceIdString } from '../types/ServiceId';
 import { isServiceIdString, normalizePni } from '../types/ServiceId';
 import { normalizeAci } from '../util/normalizeAci';
@@ -30,6 +31,8 @@ type ConvoMatchType =
     };
 
 export class DevNullConversationController implements IConversationController {
+  private _me: ConversationModel;
+
   // [!] `ConversationModelCollectionType` is not suitable, just here for compiler
   private _conversations: ConversationModelCollectionType =
     new ConversationModelCollectionType();
@@ -37,7 +40,11 @@ export class DevNullConversationController implements IConversationController {
   private readonly _initialConversations: Array<ConversationAttributesType> =
     [];
 
-  constructor(...initialConversations: Array<ConversationAttributesType>) {
+  constructor(
+    me: ConversationAttributesType,
+    initialConversations: Array<ConversationAttributesType> = []
+  ) {
+    this._me = new ConversationModel(me);
     this._initialConversations = initialConversations;
   }
 
@@ -156,7 +163,9 @@ export class DevNullConversationController implements IConversationController {
   getConversationId = () => null;
   getOurConversationId = () => this.getOurConversation().id;
   getOurConversationIdOrThrow = () => '';
-  getOurConversation = () => this._conversations.at(0);
+  getOurConversation = () => {
+    return this._me;
+  };
   getOurConversationOrThrow = () => ({} as ConversationModel);
   getOrCreateSignalConversation = () =>
     Promise.resolve({} as ConversationModel);

@@ -18,12 +18,13 @@ import * as log from '../logging/log';
 import { resolveUsernameByLink } from './username';
 import { runStorageServiceSyncJob } from './storage';
 import { writeProfile } from './writeProfile';
+import type { IUsernameIntegrityService } from '../ports/IUsernameIntegrityService';
 
 const CHECK_INTERVAL = DAY;
 
 const STORAGE_SERVICE_TIMEOUT = 30 * MINUTE;
 
-class UsernameIntegrityService {
+export class UsernameIntegrityService implements IUsernameIntegrityService {
   private isStarted = false;
   private readonly backOff = new BackOff(FIBONACCI_TIMEOUTS);
 
@@ -179,5 +180,3 @@ class UsernameIntegrityService {
     log.warn('usernameIntegrity: updated profile');
   }
 }
-
-export const usernameIntegrity = new UsernameIntegrityService();

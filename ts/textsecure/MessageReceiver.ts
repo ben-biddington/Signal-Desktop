@@ -80,7 +80,6 @@ import {
 } from './processDataMessage';
 import { processSyncMessage } from './processSyncMessage';
 import type { EventHandler } from './EventTarget';
-import EventTarget from './EventTarget';
 import { downloadAttachment } from './downloadAttachment';
 import type { IncomingWebSocketRequest } from './WebsocketResources';
 import { parseContactsV2 } from './ContactsParser';
@@ -95,7 +94,6 @@ import type {
   ProcessedSyncMessage,
   ProcessedSent,
   ProcessedEnvelope,
-  IRequestHandler,
   UnprocessedType,
 } from './Types.d';
 import {
@@ -155,7 +153,8 @@ import {
 } from '../util/callDisposition';
 import { checkOurPniIdentityKey } from '../util/checkOurPniIdentityKey';
 import { CallLinkUpdateSyncType } from '../types/CallLink';
-import { bytesToUuid } from '../util/uuidToBytes';
+import { DevNullMessageReceiver } from '../ports/DevNullMessageReceiver';
+import type { IStorage } from '../ports/IStorage';
 
 const GROUPV2_ID_LENGTH = 32;
 const RETRY_TIMEOUT = 2 * 60 * 1000;
@@ -279,16 +278,10 @@ function getEnvelopeId(envelope: ProcessedEnvelope): string {
   return `${prefix} ${timestamp} (${envelope.id})`;
 }
 
-/* eslint-disable @typescript-eslint/brace-style -- Prettier conflicts with ESLint */
-export default class MessageReceiver
-  extends EventTarget
-  implements IRequestHandler
-{
-  /* eslint-enable @typescript-eslint/brace-style */
-
+export default class MessageReceiver extends DevNullMessageReceiver {
   private server: WebAPIType;
 
-  private storage: Storage;
+  private storage: IStorage;
 
   private appQueue: PQueue;
 

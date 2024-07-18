@@ -21,7 +21,6 @@ import type { AttachmentType } from '../../types/Attachment';
 import type { StateType as RootStateType } from '../reducer';
 import * as groups from '../../groups';
 import * as log from '../../logging/log';
-import { calling } from '../../services/calling';
 import { getOwn } from '../../util/getOwn';
 import { assertDev, strictAssert } from '../../util/assert';
 import { drop } from '../../util/drop';
@@ -2504,7 +2503,10 @@ export function cancelConversationVerification(
         activeCall.conversationId === conversationId &&
         activeCall.callMode === CallMode.Direct
       ) {
-        calling.hangup(conversationId, 'canceled conversation verification');
+        window.Signal.Services.calling.hangup(
+          conversationId,
+          'canceled conversation verification'
+        );
       }
       conversationJobQueue.resolveVerificationWaiter(conversationId);
     });
@@ -2652,7 +2654,7 @@ function conversationChanged(
   data: ConversationType
 ): ThunkAction<void, RootStateType, unknown, ConversationChangedActionType> {
   return dispatch => {
-    calling.groupMembersChanged(id);
+    window.Signal.Services.calling.groupMembersChanged(id);
 
     dispatch({
       type: 'CONVERSATION_CHANGED',

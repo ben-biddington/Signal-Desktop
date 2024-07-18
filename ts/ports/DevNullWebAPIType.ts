@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { Response } from 'node-fetch';
 import { Readable } from 'stream';
+import { AuthCredentialWithPni } from '@signalapp/libsignal-client/zkgroup';
 import type {
   LinkPreviewMetadata,
   LinkPreviewImage,
@@ -78,12 +79,12 @@ import type {
 } from '../textsecure/WebAPI';
 import type { IWebSocketResource } from '../textsecure/WebsocketResources';
 import type { BackupPresentationHeadersType } from '../types/backups';
+import type { PniString } from '../types/ServiceId';
 import {
   type ServiceIdString,
   type ServiceIdKind,
   type UntaggedPniString,
   toUntaggedPni,
-  PniString,
 } from '../types/ServiceId';
 import { SocketStatus } from '../types/SocketStatus';
 import type { VerificationTransport } from '../types/VerificationTransport';
@@ -92,7 +93,6 @@ import { toDayMillis } from '../util/timestamp';
 import * as Curve from '../Curve';
 import { generateKeyPair } from '../Curve';
 import { fromString, toBase64 } from '../Bytes';
-import { AuthCredentialWithPni } from '@signalapp/libsignal-client/zkgroup';
 
 const resolve = <T>(result: T) => Promise.resolve(result);
 const resolveEmpty = () => Promise.resolve(new Uint8Array(0));

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
@@ -143,7 +144,12 @@ export class DevNullClientInterface implements ClientInterface {
   addReaction = this.void;
   _getAllReactions = this.empty;
   _removeAllReactions = this.void;
-  getMessageBySender = this.undefined;
+  getMessageBySender = (options: {
+    source?: string;
+    sourceServiceId?: ServiceIdString;
+    sourceDevice?: number;
+    sent_at: number;
+  }): Promise<MessageType | undefined> => Promise.resolve(undefined);
   getMessageById = (id: string): Promise<MessageType | undefined> =>
     this.messages.getMessageById(id);
   getMessagesById = this.empty;
@@ -304,6 +310,7 @@ export class DevNullClientInterface implements ClientInterface {
   getOlderMessagesByConversation = (
     options: AdjacentMessagesByConversationOptionsType
   ) => this.messages.findMessagesForConversation(options.conversationId);
+
   getNewerMessagesByConversation = (
     options: AdjacentMessagesByConversationOptionsType
   ) => this.messages.findMessagesForConversation(options.conversationId);

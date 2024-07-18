@@ -17,12 +17,14 @@ import * as dns from '../../util/dns';
 import * as log from '../../logging/log';
 import { SignalContext } from '../context';
 import { create } from '../../ports/DevNullTextSecure';
+import { useDevNull } from '../../adapters';
 
-const useDevNull = process.env.DEV_NULL;
+// eslint-disable-next-line react-hooks/rules-of-hooks
+window.useDevNull = useDevNull();
 
 window.nodeSetImmediate = setImmediate;
 window.Backbone = Backbone;
-window.textsecure = useDevNull ? create() : textsecure();
+window.textsecure = window.useDevNull ? create() : textsecure();
 /*
     [!] Forced to do this at the moment due to
 
@@ -94,7 +96,7 @@ if (SignalContext.config.disableIPv6) {
 }
 dns.setFallback(SignalContext.config.dnsFallback);
 
-window.Signal = (useDevNull ? mock : setup)({
+window.Signal = (window.useDevNull ? mock : setup)({
   Attachments,
   getRegionCode: () => window.storage.get('regionCode'),
   logger: log,

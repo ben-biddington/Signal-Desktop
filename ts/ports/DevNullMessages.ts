@@ -46,7 +46,9 @@ export class DevNullMessages {
     conversationId: string
   ): Promise<Array<MessageType>> =>
     Promise.resolve(
-      this.messages.filter(it => it.conversationId === conversationId)
+      this.messages
+        .filter(it => it.conversationId === conversationId)
+        .sort((a, b) => a.timestamp - b.timestamp)
     );
 
   searchMessages = (_: {
@@ -75,5 +77,6 @@ export class DevNullMessages {
       snippet: m.body?.substring(0, 5) || '',
       contact: m.contact,
       message: m.message,
+      readStatus: m.readStatus,
     }));
 }

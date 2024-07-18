@@ -25,6 +25,7 @@ import { Environment, getEnvironment } from '../../environment';
 import { isProduction } from '../../util/version';
 import { ipcInvoke } from '../../sql/channels';
 import { benchmarkConversationOpen } from '../../CI/benchmarkConversationOpen';
+import { useDevNull as _useDevNull } from '../../adapters';
 
 window.addEventListener('contextmenu', e => {
   const node = e.target as Element | null;
@@ -47,7 +48,9 @@ if (window.SignalContext.config.proxyUrl) {
 
 window.Whisper.events = clone(window.Backbone.Events);
 initMessageCleanup();
-startConversationController();
+if (_useDevNull() /* React hook complaint, hence the '_' prefix */ === false) {
+  startConversationController();
+}
 
 if (!isProduction(window.SignalContext.getVersion())) {
   const SignalDebug = {
