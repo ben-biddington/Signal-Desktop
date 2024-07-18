@@ -102,6 +102,9 @@ export class User {
   }
 
   public getCheckedAci(): AciString {
+    log.info('getCheckedAci', new Error().stack);
+    // @ts-expect-error "ABC"
+    log.info('getCheckedAci', window.storage.initialised);
     const aci = this.getAci();
     strictAssert(aci !== undefined, 'Must have our own ACI');
     return aci;
@@ -169,6 +172,8 @@ export class User {
     credentials: SetCredentialsOptions
   ): Promise<void> {
     const { aci, pni, number, deviceId, deviceName, password } = credentials;
+
+    log.info('setCredentials', { credentials });
 
     await Promise.all([
       this.storage.put('number_id', `${number}.${deviceId}`),

@@ -2,6 +2,8 @@ import type { ClientInterface } from '../sql/Interface';
 import { DevNullRemoteConfig } from './DevNullRemoteConfig';
 import { DevNullInitializeGroupCredentialFetcher } from './DevNullInitializeGroupCredentialFetcher';
 import type { RemoteConfig } from './remote-config';
+import type { TextSecureType } from '../textsecure';
+import { create } from './DevNullTextSecure';
 
 export type InitializeGroupCredentialFetcher = () => Promise<void>;
 
@@ -9,6 +11,7 @@ export type Ports = {
   initializeGroupCredentialFetcher: InitializeGroupCredentialFetcher;
   remoteConfig: RemoteConfig;
   data?: ClientInterface;
+  textsecure?: TextSecureType;
 };
 
 export class PortsBuilder {
@@ -37,4 +40,5 @@ export const asPorts = (value: Ports | PortsBuilder): Ports => {
 export const devNull: () => Ports = () => ({
   initializeGroupCredentialFetcher: DevNullInitializeGroupCredentialFetcher,
   remoteConfig: new DevNullRemoteConfig(),
+  textsecure: create(),
 });

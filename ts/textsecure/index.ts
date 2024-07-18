@@ -8,12 +8,13 @@ import utils from './Helpers';
 import SyncRequest from './SyncRequest';
 import MessageSender from './SendMessage';
 import { Storage } from './Storage';
+import type { IStorage } from '../ports/IStorage';
 import * as WebAPI from './WebAPI';
 import WebSocketResource from './WebsocketResources';
 
 export type TextSecureType = {
   utils: typeof utils;
-  storage: Storage;
+  storage: IStorage;
 
   AccountManager: typeof AccountManager;
   EventTarget: typeof EventTarget;
@@ -27,7 +28,7 @@ export type TextSecureType = {
   messaging?: MessageSender;
 };
 
-export const textsecure: TextSecureType = {
+export const textsecure = (): TextSecureType => ({
   utils,
   storage: new Storage(),
 
@@ -38,4 +39,4 @@ export const textsecure: TextSecureType = {
   SyncRequest,
   WebAPI,
   WebSocketResource,
-};
+});

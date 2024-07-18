@@ -50,6 +50,9 @@ export function initializeRedux({
   const store = createStore(initialState);
   window.reduxStore = store;
 
+  // eslint-disable-next-line no-console
+  console.log('initializeRedux', { initialState });
+
   // Binding these actions to our redux store and exposing them allows us to update
   //   redux when things change in the backbone world.
   window.reduxActions = {

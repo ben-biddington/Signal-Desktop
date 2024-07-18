@@ -471,7 +471,7 @@ export const setup = (options: {
   };
 };
 
-const mock = (options: {
+export const mock = (options: {
   Attachments: AttachmentsModuleType;
   getRegionCode: () => string | undefined;
   logger: LoggerType;

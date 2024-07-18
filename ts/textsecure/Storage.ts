@@ -98,6 +98,7 @@ export class Storage implements StorageInterface {
   }
 
   // Regular methods
+  public init = (): Promise<void> => Promise.resolve();
 
   public onready(callback: () => void): void {
     if (this.ready) {

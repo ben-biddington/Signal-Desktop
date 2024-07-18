@@ -98,7 +98,9 @@ export class UpdateKeysListener {
       void this.run();
     } else {
       log.info(
-        'UpdateKeysListener: We are offline; will update keys when we are next online'
+        'UpdateKeysListener: We are offline; will update keys when we are next online',
+        window.textsecure.storage.user.getAci(),
+        window.textsecure.storage
       );
       const listener = () => {
         window.Whisper.events.off('online', listener);

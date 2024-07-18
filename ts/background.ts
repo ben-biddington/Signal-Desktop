@@ -235,6 +235,8 @@ export async function cleanupSessionResets(): Promise<void> {
 export async function startApp(): Promise<void> {
   window.textsecure.storage.protocol = new window.SignalProtocolStore();
 
+  await window.textsecure.storage.init();
+
   if (window.initialTheme === ThemeType.light) {
     document.body.classList.add('light-theme');
   }
@@ -1518,10 +1520,16 @@ export async function startApp(): Promise<void> {
         window.ConversationController.getOurConversation()
     );
 
+    console.log('[background]', 'aci', window.textsecure.storage.user.getAci());
+
     if (isCoreDataValid && Registration.everDone()) {
       drop(connect());
       window.reduxActions.app.openInbox();
     } else {
+      console.log('[background]', {
+        isCoreDataValid,
+        registered: Registration.everDone(),
+      });
       window.IPC.readyForUpdates();
       window.reduxActions.app.openInstaller();
     }

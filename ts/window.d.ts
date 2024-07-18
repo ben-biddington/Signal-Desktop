@@ -11,7 +11,7 @@ import type { PhoneNumber, PhoneNumberFormat } from 'google-libphonenumber';
 import type { MochaOptions } from 'mocha';
 
 import type { ConversationModelCollectionType } from './model-types.d';
-import type { textsecure } from './textsecure';
+import type { textsecure, TextSecureType } from './textsecure';
 import type { Storage } from './textsecure/Storage';
 import type {
   ChallengeHandler,
@@ -54,6 +54,7 @@ import type { initializeMigrations } from './signal';
 import type { RetryPlaceholders } from './util/retryPlaceholders';
 import type { PropsPreloadType as PreferencesPropsType } from './components/Preferences';
 import type { WindowsNotificationData } from './services/notifications';
+import { IStorage } from './ports/IStorage';
 
 export { Long } from 'long';
 
@@ -220,7 +221,7 @@ declare global {
     setImmediate: typeof setImmediate;
     sendChallengeRequest: (request: IPCChallengeRequest) => void;
     showKeyboardShortcuts: () => void;
-    storage: Storage;
+    storage: IStorage;
     systemTheme: ThemeType;
 
     Signal: SignalCoreType;
@@ -246,7 +247,7 @@ declare global {
     i18n: LocalizerType;
     // Note: used in background.html, and not type-checked
     startApp: () => void;
-    textsecure: typeof textsecure;
+    textsecure: TextSecureType;
 
     // IPC
     IPC: IPCType;

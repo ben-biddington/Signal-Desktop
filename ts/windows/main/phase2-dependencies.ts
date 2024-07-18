@@ -10,15 +10,18 @@ import 'moment/min/locales.min';
 
 import { textsecure } from '../../textsecure';
 import * as Attachments from '../attachments';
-import { setup } from '../../signal';
+import { mock, setup } from '../../signal';
 import { addSensitivePath } from '../../util/privacy';
 import * as dns from '../../util/dns';
 import * as log from '../../logging/log';
 import { SignalContext } from '../context';
+import { create } from '../../ports/DevNullTextSecure';
+
+const useDevNull = true;
 
 window.nodeSetImmediate = setImmediate;
 window.Backbone = Backbone;
-window.textsecure = textsecure;
+window.textsecure = useDevNull ? create() : textsecure();
 
 const { config } = window.SignalContext;
 
@@ -78,7 +81,7 @@ if (SignalContext.config.disableIPv6) {
 }
 dns.setFallback(SignalContext.config.dnsFallback);
 
-window.Signal = setup({
+window.Signal = (useDevNull ? mock : setup)({
   Attachments,
   getRegionCode: () => window.storage.get('regionCode'),
   logger: log,
