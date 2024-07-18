@@ -1,10 +1,14 @@
-import type { CombineConversationsParams } from '../ConversationController';
+import type {
+  CombineConversationsParams,
+  SafeCombineConversationsParams,
+} from '../ConversationController';
 import type {
   ConversationAttributesType,
   ConversationAttributesTypeType,
 } from '../model-types';
 import type { ConversationModel } from '../models/conversations';
-import type { ServiceIdString } from '../types/ServiceId';
+import type { ClientSearchResultMessageType } from '../sql/Interface';
+import type { AciString, PniString, ServiceIdString } from '../types/ServiceId';
 
 // Based on `ts/ConversationController.ts`
 export type IConversationController = {
@@ -62,4 +66,26 @@ export type IConversationController = {
   onConvoMessageMount: (conversationId: string) => void;
   repairPinnedConversations: () => void;
   clearShareMyPhoneNumber: () => Promise<void>;
+  maybeMergeContacts: (args: {
+    aci?: AciString;
+    e164?: string;
+    pni?: PniString;
+    reason: string;
+    fromPniSignature?: boolean;
+    mergeOldAndNew?: (options: SafeCombineConversationsParams) => Promise<void>;
+  }) => {
+    conversation: ConversationModel;
+    mergePromises: Array<Promise<void>>;
+  };
+
+  // [new]
+  searchMessages: ({
+    query,
+    searchConversationId,
+    contactServiceIdsMatchingQuery,
+  }: {
+    query: string;
+    searchConversationId?: string;
+    contactServiceIdsMatchingQuery?: Array<ServiceIdString>;
+  }) => Promise<Array<ClientSearchResultMessageType>>;
 };

@@ -67,6 +67,7 @@ export function getInitialState({
   const items = window.storage.getItemsState();
 
   const convoCollection = window.getConversations();
+
   const formattedConversations = convoCollection.map(conversation =>
     conversation.format()
   );

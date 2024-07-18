@@ -17,7 +17,7 @@ import * as log from '../../logging/log';
 import { SignalContext } from '../context';
 import { create } from '../../ports/DevNullTextSecure';
 
-const useDevNull = true;
+const useDevNull = process.env.DEV_NULL;
 
 window.nodeSetImmediate = setImmediate;
 window.Backbone = Backbone;

@@ -17,8 +17,8 @@ import type {
   CdsLookupOptionsType,
   GetIceServersResultType,
 } from '../../textsecure/WebAPI';
-import type { FeatureFlagType } from '../../window.d';
-import type { StorageAccessType } from '../../types/Storage.d';
+import type { FeatureFlagType } from '../../window';
+import type { StorageAccessType } from '../../types/Storage';
 import { start as startConversationController } from '../../ConversationController';
 import { initMessageCleanup } from '../../services/messageStateCleanup';
 import { Environment, getEnvironment } from '../../environment';

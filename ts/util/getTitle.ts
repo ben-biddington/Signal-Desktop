@@ -20,6 +20,9 @@ export function getTitle(
   options?: TitleOptions
 ): string {
   const title = getTitleNoDefault(attributes, options);
+  // eslint-disable-next-line no-console
+  console.log('getTitle', { attributes, title });
+
   if (title) {
     return title;
   }

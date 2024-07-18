@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Copyright 2019 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
@@ -43,8 +44,6 @@ import { removeDiacritics } from '../../util/removeDiacritics';
 import * as log from '../../logging/log';
 import { searchConversationTitles } from '../../util/searchConversationTitles';
 import { isDirectConversation } from '../../util/whatTypeOfConversation';
-
-const { searchMessages: dataSearchMessages }: ClientInterface = dataInterface;
 
 // State
 
@@ -188,6 +187,9 @@ function updateSearchTerm(
 
     const i18n = getIntl(state);
 
+    // eslint-disable-next-line no-console
+    console.log('getAllConversations', getAllConversations(state));
+
     doSearch({
       dispatch,
       allConversations: getAllConversations(state),
@@ -227,6 +229,8 @@ const doSearch = debounce(
       return;
     }
 
+    log.info('[doSearch]', query, allConversations, { searchConversationId });
+
     // Limit the number of contacts to something reasonable
     const MAX_MATCHING_CONTACTS = 100;
 
@@ -249,6 +253,8 @@ const doSearch = debounce(
         searchConversationId,
         contactServiceIdsMatchingQuery,
       });
+
+      log.info('[doSearch]', messages);
 
       dispatch({
         type: 'SEARCH_MESSAGES_RESULTS_FULFILLED',
@@ -298,14 +304,14 @@ async function queryMessages({
     }
 
     if (searchConversationId) {
-      return dataSearchMessages({
+      return window.Signal.Data.searchMessages({
         query,
         conversationId: searchConversationId,
         contactServiceIdsMatchingQuery,
       });
     }
 
-    return dataSearchMessages({
+    return window.Signal.Data.searchMessages({
       query,
       contactServiceIdsMatchingQuery,
     });
@@ -342,6 +348,8 @@ async function queryConversationsAndContacts(
     normalizedQuery,
     regionCode
   );
+
+  console.log('queryConversationsAndContacts', { searchResults });
 
   // Split into two groups - active conversations and items just from address book
   let conversationIds: Array<string> = [];

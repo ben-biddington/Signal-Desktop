@@ -538,6 +538,6 @@ export type ShallowChallengeError = CustomError & {
   readonly data: SendMessageChallengeData;
 };
 
-export declare class ConversationModelCollectionType extends Backbone.Collection<ConversationModel> {
+export class ConversationModelCollectionType extends Backbone.Collection<ConversationModel> {
   resetLookups(): void;
 }

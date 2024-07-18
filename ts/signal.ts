@@ -51,9 +51,15 @@ import type {
   LinkPreviewWithHydratedData,
 } from './types/message/LinkPreviews';
 import type { StickerType, StickerWithHydratedData } from './types/Stickers';
-import { newPorts, Ports } from './ports/ports';
+import type { Ports } from './ports/ports';
+import { newPorts } from './ports/ports';
 import { DevNullClientInterface } from './ports/DevNullClientInterface';
 import { markEverDone } from './util/registration';
+import {
+  start,
+  DevNullConversationController,
+} from './ports/DevNullConversationController';
+import { createMessage, DevNullMessages } from './ports/DevNullMessages';
 
 type EncryptedReader = (
   attachment: Partial<AddressableAttachmentType>
@@ -409,9 +415,6 @@ export const setup = (options: {
   logger: LoggerType;
   userDataPath: string;
 }): SignalCoreType => {
-  return mock(options);
-
-  // eslint-disable-next-line no-unreachable
   const { Attachments, getRegionCode, logger, userDataPath } = options;
 
   const Migrations = initializeMigrations({
@@ -479,8 +482,59 @@ export const mock = (options: {
   logger: LoggerType;
   userDataPath: string;
 }): SignalCoreType => {
+  const conversationController = new DevNullConversationController(
+    {
+      id: 'private-conversation-1',
+      type: 'private',
+      version: 1,
+      addedBy: 'Ben',
+      description: 'A B C',
+      groupId: 'group-1',
+      members: ['Ben'],
+      name: 'Ben',
+    },
+    {
+      id: 'conversation-1',
+      type: 'group',
+      version: 1,
+      addedBy: 'Ben',
+      description: 'Conversation 1',
+      groupId: 'group-1',
+      members: ['Ben'],
+      name: 'Conversation 1',
+    },
+    {
+      id: 'conversation-2',
+      type: 'group',
+      version: 1,
+      addedBy: 'Ben',
+      description: 'Conversation 1',
+      groupId: 'group-1',
+      members: ['Ben', 'Derwood', 'Sally'],
+      name: 'Conversation 2',
+    }
+  );
+
+  const data = new DevNullClientInterface(
+    new DevNullMessages(
+      createMessage({
+        id: 'msg-1',
+        conversationId: 'conversation-2',
+        message: 'A B C',
+      }),
+      createMessage({
+        id: 'msg-2',
+        conversationId: 'conversation-2',
+        message: 'D E F',
+      })
+    )
+  );
+
   const ports: Ports = newPorts()
-    .with({ data: new DevNullClientInterface(true) })
+    .with({
+      data,
+      conversationController,
+    })
     .build();
 
   const { Attachments, getRegionCode, logger, userDataPath } = options;
@@ -526,12 +580,14 @@ export const mock = (options: {
     QualifiedAddress,
   };
 
+  const _conversationControllerStart = () => start(conversationController);
+
   return {
     Components,
     Crypto,
     Curve,
     // Note: used in test/index.html, and not type-checked!
-    conversationControllerStart,
+    conversationControllerStart: _conversationControllerStart,
     Data: ports.data ? ports.data : Data,
     Groups,
     Migrations,
@@ -540,14 +596,9 @@ export const mock = (options: {
     Services,
     State,
     Types,
-    init: () => markEverDone(),
+    init: async () => {
+      await markEverDone();
+      _conversationControllerStart();
+    },
   };
 };
-
-// [!] Copied from `ts/ConversationController.ts`
-export function startConversationsController(ports: Ports): void {
-  const conversations = new window.Whisper.ConversationCollection();
-
-  window.ConversationController = ports.conversationController;
-  window.getConversations = () => conversations;
-}

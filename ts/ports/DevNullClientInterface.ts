@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { CallLinkRestrictions } from '@signalapp/ringrtc';
 import type {
@@ -6,42 +8,30 @@ import type {
   GetAllStoriesResultType,
   StoryDistributionWithMembersType,
   PageMessagesResultType,
+  MessageType,
+  ConversationType,
 } from '../sql/Interface';
 import type { AttachmentDownloadJobType } from '../types/AttachmentDownload';
-
-const pretty = (what: unknown) => JSON.stringify(what, null, 2);
+import type { ServiceIdString } from '../types/ServiceId';
+import type { DevNullMessages } from './DevNullMessages';
 
 export class DevNullClientInterface implements ClientInterface {
-  private verbose: boolean;
+  private messages: DevNullMessages;
 
-  constructor(verbose: boolean) {
-    this.verbose = verbose;
+  constructor(messages: DevNullMessages) {
+    this.messages = messages;
   }
 
-  private print = (args: []) => {
-    if (this.verbose) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[DevNullClientInterface] ${pretty(args)}\n${
-          new Error('Not an error, printing stack').stack
-        }`
-      );
-    }
-  };
-  private void = (...args: []) => {
-    this.print(args);
+  private void = () => {
     return Promise.resolve();
   };
-  private zero = (...args: []) => {
-    this.print(args);
+  private zero = () => {
     return Promise.resolve(0);
   };
-  private empty = (...args: []) => {
-    this.print(args);
+  private empty = () => {
     return Promise.resolve([]);
   };
-  private undefined = (...args: []) => {
-    this.print(args);
+  private undefined = () => {
     return Promise.resolve(undefined);
   };
 
@@ -98,7 +88,10 @@ export class DevNullClientInterface implements ClientInterface {
   saveConversation = this.void;
   saveConversations = this.void;
   getConversationById = () => Promise.resolve(undefined);
-  updateConversations = this.void;
+  updateConversations = (array: Array<ConversationType>) => {
+    console.log('[ts/ports/DevNullClientInterface.ts]', array);
+    return Promise.resolve();
+  };
   _removeAllConversations = this.void;
   updateAllConversationColors = this.void;
   removeAllProfileKeyCredentials = this.void;
@@ -138,7 +131,8 @@ export class DevNullClientInterface implements ClientInterface {
   _getAllReactions = this.empty;
   _removeAllReactions = this.void;
   getMessageBySender = this.undefined;
-  getMessageById = this.undefined;
+  getMessageById = (id: string): Promise<MessageType | undefined> =>
+    this.messages.getMessageById(id);
   getMessagesById = this.empty;
   _getAllMessages = this.empty;
   _getAllEditedMessagee = this.empty;
@@ -192,6 +186,7 @@ export class DevNullClientInterface implements ClientInterface {
       // CallLinkUpdate sync and before readCallLink
       expiration: null,
     });
+
   migrateConversationMessages = this.void;
   getMessagesBetween = this.empty;
   getNearbyMessageFromDeletedSet = () => Promise.resolve(null);
@@ -282,7 +277,15 @@ export class DevNullClientInterface implements ClientInterface {
   updateConversation = this.void;
   removeConversation = this.void;
   flushUpdateConversationBatcher = this.void;
-  searchMessages = this.empty;
+  searchMessages = (args: {
+    query: string;
+    conversationId?: string;
+    options?: { limit?: number };
+    contactServiceIdsMatchingQuery?: Array<ServiceIdString>;
+  }) => {
+    return this.messages.searchMessages(args);
+  };
+
   getRecentStoryReplies = this.empty;
   getOlderMessagesByConversation = this.empty;
   getNewerMessagesByConversation = this.empty;

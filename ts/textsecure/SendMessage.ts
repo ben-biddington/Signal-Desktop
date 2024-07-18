@@ -89,18 +89,7 @@ import type {
   MessageToDelete,
 } from './messageReceiverEvents';
 import { getConversationFromTarget } from '../util/deleteForMe';
-import type { CallDetails, CallHistoryDetails } from '../types/CallDisposition';
-import {
-  AdhocCallStatus,
-  DirectCallStatus,
-  GroupCallStatus,
-} from '../types/CallDisposition';
-import {
-  getBytesForPeerId,
-  getProtoForCallHistory,
-} from '../util/callDisposition';
-import { CallMode } from '../types/Calling';
-import { MAX_MESSAGE_COUNT } from '../util/deleteForMe.types';
+import type { IMessageSender } from '../ports/IMessageSender';
 
 export type SendMetadataType = {
   [serviceId: ServiceIdString]: {
@@ -625,7 +614,7 @@ function addPniSignatureMessageToProto({
   };
 }
 
-export default class MessageSender {
+export default class MessageSender implements IMessageSender {
   pendingMessages: {
     [id: string]: PQueue;
   };

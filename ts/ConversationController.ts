@@ -38,7 +38,8 @@ import { getTitleNoDefault } from './util/getTitle';
 import * as StorageService from './services/storage';
 import type { ConversationPropsForUnreadStats } from './util/countUnreadStats';
 import { countAllConversationsUnreadStats } from './util/countUnreadStats';
-import { IConversationController } from './ports/IConversationController';
+import type { IConversationController } from './ports/IConversationController';
+import type { ClientInterface } from './sql/Interface';
 
 type ConvoMatchType =
   | {
@@ -138,6 +139,7 @@ const {
 //   Whisper.* have been created. Once those are in typescript we can use more reasonable
 //   require statements for referencing these things, giving us more flexibility here.
 export function start(): void {
+  log.info('ts/ConversationController.ts start', new Error().stack);
   const conversations = new window.Whisper.ConversationCollection();
 
   window.ConversationController = new ConversationController(conversations);
@@ -1484,4 +1486,6 @@ export class ConversationController implements IConversationController {
       throw error;
     }
   }
+
+  searchMessages = dataInterface.searchMessages;
 }
